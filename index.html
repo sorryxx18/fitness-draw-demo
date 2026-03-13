@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>消防局體能抽測抽籤器（Demo：B+D）</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111a33; --panel2:#0f1730; --text:#e8ecff; --muted:#aab3d6;
+      --ok:#20c997; --warn:#f59f00; --danger:#ff6b6b; --line:rgba(255,255,255,.12);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 16px;
+    }
+    body{margin:0; font-family:system-ui,-apple-system,"Noto Sans TC",Segoe UI,Roboto,sans-serif; background:radial-gradient(1200px 700px at 15% 10%, #1b2b66 0%, rgba(27,43,102,0) 60%),
+      radial-gradient(900px 600px at 85% 30%, #3d1b66 0%, rgba(61,27,102,0) 55%),
+      linear-gradient(180deg, #070a14 0%, #0b1020 60%, #070a14 100%);
+      color:var(--text);
+    }
+    .wrap{max-width:1200px; margin:28px auto; padding:0 18px 36px;}
+    h1{margin:0 0 10px; font-size:26px; letter-spacing:.3px}
+    .sub{color:var(--muted); margin-bottom:16px; line-height:1.6}
+    .topbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    input[type=text], input[type=number]{background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
+      padding:10px 12px; border-radius:12px; outline:none;}
+    input[type=text]::placeholder{color:rgba(232,236,255,.45)}
+    button{border:1px solid var(--line); background:rgba(255,255,255,.08); color:var(--text);
+      padding:10px 12px; border-radius:12px; cursor:pointer; transition:transform .05s ease, background .2s ease;}
+    button:hover{background:rgba(255,255,255,.12)}
+    button:active{transform:translateY(1px)}
+    button.primary{background:linear-gradient(135deg, rgba(32,201,151,.25), rgba(45,110,255,.18)); border-color:rgba(32,201,151,.35)}
+    button.primary:hover{background:linear-gradient(135deg, rgba(32,201,151,.35), rgba(45,110,255,.22))}
+    button.danger{background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.35)}
+
+    .grid{display:grid; grid-template-columns: 1.25fr .75fr; gap:16px; margin-top:16px;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .card{background:rgba(17,26,51,.68); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+    .card .hd{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px}
+    .card .bd{padding:16px}
+
+    .fair{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    @media (max-width: 520px){ .fair{grid-template-columns:1fr;} }
+    .kv{background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:14px; padding:12px}
+    .kv .k{font-size:12px; color:var(--muted)}
+    .kv .v{margin-top:6px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; word-break:break-all}
+
+    .brigades{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+    @media (max-width: 880px){ .brigades{grid-template-columns:1fr;} }
+
+    .bcard{background:rgba(15,23,48,.75); border:1px solid var(--line); border-radius:16px; overflow:hidden}
+    .bhd{padding:12px 14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center}
+    .bname{font-weight:800}
+    .badge{font-size:12px; color:var(--muted)}
+
+    .waterfall{height:220px; position:relative; overflow:hidden; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));}
+    .waterfall::after{content:""; position:absolute; left:0; right:0; top:0; height:45px; background:linear-gradient(180deg, rgba(11,16,32,.95), rgba(11,16,32,0)); pointer-events:none}
+    .waterfall::before{content:""; position:absolute; left:0; right:0; bottom:0; height:55px; background:linear-gradient(0deg, rgba(11,16,32,.95), rgba(11,16,32,0)); pointer-events:none}
+    .stream{position:absolute; left:0; right:0; top:0; padding:10px 14px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:13px; line-height:1.6; color:rgba(232,236,255,.9)}
+    .pulse{animation:pulse 1.2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.75} 50%{opacity:1}}
+
+    .picked{padding:12px 14px; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr; gap:6px}
+    .pitem{display:flex; gap:10px; align-items:baseline; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      border-radius:12px; padding:8px 10px}
+    .pno{width:26px; color:rgba(232,236,255,.65); font-family:ui-monospace,monospace}
+    .ptext{flex:1}
+    .flash{animation:flash .45s ease}
+    @keyframes flash{0%{background:rgba(32,201,151,.20); border-color:rgba(32,201,151,.55)} 100%{}}
+
+    .side .bd{display:flex; flex-direction:column; gap:12px}
+    .note{color:var(--muted); line-height:1.6; font-size:13px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+
+    .hr{height:1px; background:var(--line); margin:8px 0}
+
+    .footer{margin-top:14px; color:rgba(232,236,255,.55); font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>消防局體能抽測抽籤器（Demo）</h1>
+    <div class="sub">模式：<b>B</b> 名單瀑布跑馬燈＋逐步停格（每大隊抽 20）｜<b>D</b> 公平性展示（seed + 名單摘要 hash + 可複驗）</div>
+
+    <div class="card">
+      <div class="hd">
+        <div class="topbar">
+          <button class="primary" id="btnGen">生成 Demo 名單（每隊 50）</button>
+          <button id="btnDraw">開始抽籤</button>
+          <button id="btnCSV">下載「名單 CSV」</button>
+          <button id="btnResult" class="secondary">下載「結果 CSV」</button>
+          <button id="btnReset" class="danger">清空</button>
+          <span style="flex:1"></span>
+          <label>每隊抽：</label>
+          <input id="pickCount" type="number" value="20" min="1" style="width:90px" />
+          <label>seed：</label>
+          <input id="seed" type="text" placeholder="可留空＝自動生成" style="min-width:320px" />
+        </div>
+      </div>
+      <div class="bd">
+        <div class="fair">
+          <div class="kv"><div class="k">抽籤時間</div><div class="v" id="kvTime">-</div></div>
+          <div class="kv"><div class="k">seed（可寫入會議紀錄以重現）</div><div class="v" id="kvSeed">-</div></div>
+          <div class="kv"><div class="k">名單摘要 hash（SHA-256 of CSV text）</div><div class="v" id="kvHash">-</div></div>
+          <div class="kv"><div class="k">名單人數（四隊）</div><div class="v" id="kvCount">-</div></div>
+        </div>
+        <div class="footer">備註：這是 demo 版（本機離線）。正式版會加 CSV 匯入（拖拉）＋排除規則＋遮罩顯示敏感欄位。</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="hd"><b>抽籤動畫區</b><span class="badge">每大隊獨立抽樣、不重複</span></div>
+        <div class="bd">
+          <div class="brigades" id="brigades"></div>
+        </div>
+      </div>
+
+      <div class="card side">
+        <div class="hd"><b>說明</b></div>
+        <div class="bd">
+          <div class="note">
+            <div><b>Demo 名單欄位</b></div>
+            <div class="mono">brigade,unit,empId,name,title</div>
+            <div class="hr"></div>
+            <div><b>公平性（D）</b></div>
+            <div>抽之前先固定 seed，並顯示名單摘要 hash。之後若有人質疑，可拿同一份名單 + seed 重跑驗證。</div>
+            <div class="hr"></div>
+            <div><b>動畫（B）</b></div>
+            <div>每隊名單快速滾動，依序停格 20 人並高亮。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ---------- seeded RNG (xmur3 + sfc32) ----------
+  function xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i=0; i<str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function() {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      return (h ^= (h >>> 16)) >>> 0;
+    }
+  }
+  function sfc32(a, b, c, d) {
+    return function() {
+      a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+      let t = (a + b) | 0;
+      a = b ^ (b >>> 9);
+      b = (c + (c << 3)) | 0;
+      c = (c << 21) | (c >>> 11);
+      d = (d + 1) | 0;
+      t = (t + d) | 0;
+      c = (c + t) | 0;
+      return (t >>> 0) / 4294967296;
+    }
+  }
+  function makeRng(seedText) {
+    const seed = seedText && seedText.trim()
+      ? seedText.trim()
+      : (new Date().toISOString().slice(0,19).replace('T','_') + '_' + Math.random().toString(16).slice(2));
+    const gen = xmur3(seed);
+    return { seed, rng: sfc32(gen(), gen(), gen(), gen()) };
+  }
+
+  // ---------- Demo data generation ----------
+  const lastNames = ["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","廖","賴","徐","周","葉","蘇","莊","呂","江","何","蕭","羅","高","潘"];
+  const firstNames = ["冠廷","承翰","子軒","柏宇","俊傑","宥翔","品睿","家豪","宇辰","祐誠","廷祐","哲維","昱翔","孟軒","瑋倫","志豪","振宇","建宏","彥廷","彥甫",
+                     "怡君","思妤","雅婷","佳穎","郁庭","語涵","品妍","鈺婷","婉如","子晴","佳蓉","佩珊","宜庭","昱伶","婕妤"];
+  const titles = ["消防員","小隊長","分隊長","隊員","駕駛","救護技術員","教官"];
+  const units = ["一分隊","二分隊","三分隊","四分隊","五分隊","特搜分隊","救護分隊","勤務分隊","勤務中心"];
+
+  function pad(n, w){ return String(n).padStart(w,'0'); }
+  function randPick(arr, rng){ return arr[Math.floor(rng()*arr.length)]; }
+
+  function genRoster(perBrigade=50, seedText=''){
+    const {seed, rng} = makeRng(seedText || ('DEMO_' + Date.now()));
+    const rows=[];
+    for(let b=1;b<=4;b++){
+      const used=new Set();
+      for(let i=0;i<perBrigade;i++){
+        // empId unique-ish
+        let empId;
+        do{ empId = 'B' + b + pad(Math.floor(rng()*100000),5); } while(used.has(empId));
+        used.add(empId);
+        const name = randPick(lastNames,rng) + randPick(firstNames,rng);
+        rows.push({ brigade: String(b), unit: randPick(units,rng), empId, name, title: randPick(titles,rng) });
+      }
+    }
+    return { seed, rows };
+  }
+
+  function toCSV(rows){
+    const header = ['brigade','unit','empId','name','title'];
+    const lines=[header.join(',')];
+    for(const r of rows){
+      lines.push([r.brigade,r.unit,r.empId,r.name,r.title].map(x => '"'+String(x).replaceAll('"','""')+'"').join(','));
+    }
+    return lines.join('\n');
+  }
+
+  async function sha256(text){
+    const enc = new TextEncoder();
+    const buf = await crypto.subtle.digest('SHA-256', enc.encode(text));
+    const arr = Array.from(new Uint8Array(buf));
+    return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ---------- UI state ----------
+  const state = {
+    rosterRows: [],
+    rosterCSV: '',
+    resultRows: [],
+    resultCSV: '',
+    drawSeed: '',
+  };
+
+  const brigadeNames = {
+    '1':'第一大隊', '2':'第二大隊', '3':'第三大隊', '4':'第四大隊'
+  };
+
+  function el(id){ return document.getElementById(id); }
+
+  function setupBrigadeCards(){
+    const wrap = el('brigades');
+    wrap.innerHTML='';
+    for(let b=1;b<=4;b++){
+      const id='b'+b;
+      const card=document.createElement('div');
+      card.className='bcard';
+      card.innerHTML = `
+        <div class="bhd">
+          <div class="bname">${brigadeNames[String(b)]}</div>
+          <div class="badge" id="${id}_count">名單 0</div>
+        </div>
+        <div class="waterfall"><div class="stream pulse" id="${id}_stream">（尚未開始）</div></div>
+        <div class="picked" id="${id}_picked"></div>
+      `;
+      wrap.appendChild(card);
+    }
+  }
+
+  function setFairPanel(){
+    el('kvTime').textContent = new Date().toLocaleString('zh-TW');
+    el('kvSeed').textContent = state.drawSeed || '-';
+    el('kvHash').textContent = state.rosterCSV ? (state.rosterHash || '-') : '-';
+    const counts = [1,2,3,4].map(b => state.rosterRows.filter(r=>r.brigade===String(b)).length);
+    el('kvCount').textContent = counts.map((c,i)=>`${brigadeNames[String(i+1)]}=${c}`).join(' ｜ ');
+    for(let b=1;b<=4;b++){
+      el('b'+b+'_count').textContent = `名單 ${counts[b-1]}`;
+    }
+  }
+
+  function downloadText(filename, text, mime){
+    const blob = new Blob([text], {type: mime || 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Draw logic + Animation (B) ----------
+  function groupRows(){
+    const g={};
+    for(let b=1;b<=4;b++) g[String(b)]=[];
+    for(const r of state.rosterRows){
+      if(g[r.brigade]) g[r.brigade].push(r);
+    }
+    return g;
+  }
+
+  function pickN(rows, n, rng){
+    if(n>rows.length) throw new Error(`名單不足：需要 ${n} 人，但只有 ${rows.length} 人`);
+    // shuffle copy
+    const arr = rows.slice();
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(rng()* (i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr.slice(0,n);
+  }
+
+  async function runDraw(){
+    const n = parseInt(el('pickCount').value,10);
+    const { seed, rng } = makeRng(el('seed').value);
+    state.drawSeed = seed;
+
+    const groups = groupRows();
+    for(let b=1;b<=4;b++){
+      if(groups[String(b)].length < n){
+        alert(`${brigadeNames[String(b)]} 名單只有 ${groups[String(b)].length}，無法抽 ${n}`);
+        return;
+      }
+    }
+
+    // Fairness panel update
+    setFairPanel();
+
+    // Prepare results
+    const resultRows=[];
+
+    // Animate each brigade sequentially
+    for(let b=1;b<=4;b++){
+      const key=String(b);
+      const list = groups[key];
+      const picked = pickN(list, n, rng);
+
+      // run waterfall animation while picking
+      await animatePick(key, list, picked);
+
+      picked.forEach((r, idx) => {
+        resultRows.push({ brigade:key, no: idx+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
+      });
+    }
+
+    state.resultRows = resultRows;
+    state.resultCSV = toResultCSV(resultRows);
+  }
+
+  function toResultCSV(rows){
+    const header=['brigade','brigadeName','no','unit','empId','name','title'];
+    const lines=[header.join(',')];
+    for(const r of rows){
+      const brigadeName = brigadeNames[r.brigade] || r.brigade;
+      lines.push([r.brigade, brigadeName, r.no, r.unit, r.empId, r.name, r.title]
+        .map(x => '"'+String(x).replaceAll('"','""')+'"').join(','));
+    }
+    return lines.join('\n');
+  }
+
+  function fmtRow(r){
+    return `${r.empId} ${r.name}（${r.unit}／${r.title}）`;
+  }
+
+  function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+  async function animatePick(brigadeKey, list, picked){
+    const stream = el('b'+brigadeKey+'_stream');
+    const pickedBox = el('b'+brigadeKey+'_picked');
+    pickedBox.innerHTML='';
+
+    // Waterfall: scroll-like updates
+    const linesShown = 8;
+    let t=0;
+    const rolling = setInterval(() => {
+      const chunk=[];
+      for(let i=0;i<linesShown;i++){
+        const r = list[Math.floor(Math.random()*list.length)];
+        chunk.push('· ' + fmtRow(r));
+      }
+      stream.textContent = chunk.join('\n');
+      t++;
+    }, 60);
+
+    // after a short ramp, start locking one by one
+    await sleep(600);
+
+    for(let i=0;i<picked.length;i++){
+      // slow down as it approaches each lock
+      await sleep(260 + i*15);
+      const r = picked[i];
+      const item = document.createElement('div');
+      item.className='pitem flash';
+      item.innerHTML = `<div class="pno">${String(i+1).padStart(2,'0')}</div><div class="ptext">${fmtRow(r)}</div>`;
+      pickedBox.appendChild(item);
+
+      // brief emphasis in stream
+      stream.textContent = `✅ 鎖定：${fmtRow(r)}\n\n` + stream.textContent;
+    }
+
+    clearInterval(rolling);
+    stream.classList.remove('pulse');
+    stream.textContent = `【${brigadeNames[brigadeKey]}】抽籤完成（${picked.length} 人已鎖定）`;
+    await sleep(250);
+  }
+
+  // ---------- Buttons ----------
+  setupBrigadeCards();
+
+  el('btnGen').addEventListener('click', async () => {
+    const demo = genRoster(50);
+    state.rosterRows = demo.rows;
+    state.rosterCSV = toCSV(demo.rows);
+    state.rosterHash = await sha256(state.rosterCSV);
+    state.drawSeed = '';
+    el('seed').value = '';
+    // reset visuals
+    setupBrigadeCards();
+    setFairPanel();
+    alert('已生成 Demo 名單：每大隊 50 人（共 200 人）。');
+  });
+
+  el('btnDraw').addEventListener('click', async () => {
+    if(!state.rosterRows.length){
+      alert('請先「生成 Demo 名單」或在正式版匯入 CSV。');
+      return;
+    }
+    // reset animation area
+    setupBrigadeCards();
+    setFairPanel();
+    await runDraw();
+  });
+
+  el('btnCSV').addEventListener('click', () => {
+    if(!state.rosterCSV){ alert('尚未有名單'); return; }
+    downloadText('demo_roster.csv', state.rosterCSV, 'text/csv;charset=utf-8');
+  });
+
+  el('btnResult').addEventListener('click', () => {
+    if(!state.resultCSV){ alert('尚未抽籤'); return; }
+    downloadText('draw_result.csv', state.resultCSV, 'text/csv;charset=utf-8');
+  });
+
+  el('btnReset').addEventListener('click', () => {
+    state.rosterRows=[]; state.rosterCSV=''; state.resultRows=[]; state.resultCSV=''; state.drawSeed=''; state.rosterHash='';
+    el('seed').value='';
+    setupBrigadeCards();
+    setFairPanel();
+  });
+
+  // initial panel
+  setFairPanel();
+</script>
+</body>
+</html>

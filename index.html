@@ -5,29 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>臺北市政府消防局 體能抽測抽籤系統（範例）</title>
   <style>
-    /* 風格 2: 消防戰情室 (深藍制服底色 + 救援黃強調色) */
     :root{
-      --bg: #0B111F;           /* 水泥灰暗色/深夜黑 */
-      --panel: #141C2F;        /* 制服深藍色盤 */
-      --panel2: #1A243B;
-      --text: #E2E8F0;         /* 灰白 */
+      --bg: #0B111F;           
+      --panel: rgba(20, 28, 47, 0.85);        
+      --panel2: rgba(26, 36, 59, 0.9);
+      --text: #E2E8F0;         
       --muted: #94A3B8;
-      --primary: #FFB300;      /* 救援黃 (反光條色) */
+      --primary: #FFB300;      
       --primary-hover: #F59E0B;
-      --danger: #EF4444;       /* 警示紅 */
-      --line: rgba(255,255,255,0.1);
-      --shadow: 0 10px 40px rgba(0,0,0,0.5);
+      --danger: #EF4444;       
+      --line: rgba(255,255,255,0.15);
+      --shadow: 0 10px 40px rgba(0,0,0,0.6);
       --radius: 12px;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
     body {
       margin: 0; 
       font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-      background: var(--bg);
       color: var(--text);
-      /* 模擬操場/戰情室微雜訊質感 */
-      background-image: radial-gradient(circle at 50% 0%, #1A243B 0%, transparent 70%);
       min-height: 100vh;
+      /* 背景使用操課照片並加上深色遮罩 */
+      background-color: var(--bg);
+      background-image: linear-gradient(rgba(11, 17, 31, 0.8), rgba(11, 17, 31, 0.95)), url('./assets/bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
     
     /* 頁首：置中大 LOGO + 標題 */
@@ -35,26 +37,28 @@
       text-align: center;
       padding: 30px 16px 20px;
       border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(20,28,47,0.8) 0%, rgba(11,17,31,0) 100%);
+      background: linear-gradient(180deg, rgba(11,17,31,0.9) 0%, rgba(11,17,31,0) 100%);
     }
     .header-zone img {
       height: 90px;
-      border-radius: 8px; /* 那張圖是白底方圖，加點圓角比較不突兀 */
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       margin-bottom: 16px;
     }
     .header-zone h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
     .header-zone .sub {
       color: var(--primary);
       font-size: 14px;
       margin-top: 8px;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
     .wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px 40px; }
@@ -62,7 +66,7 @@
     /* 控制列與按鈕 */
     .topbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
     input[type=text], input[type=number] {
-      background: rgba(0,0,0,0.2); border: 1px solid var(--line); color: var(--text);
+      background: rgba(0,0,0,0.4); border: 1px solid var(--line); color: var(--text);
       padding: 10px 12px; border-radius: 8px; outline: none; font-family: var(--font-mono);
     }
     input:focus { border-color: var(--primary); }
@@ -71,95 +75,96 @@
       border: 1px solid var(--line); background: var(--panel2); color: var(--text);
       padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
       transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
     }
-    button:hover { background: rgba(255,255,255,0.1); }
+    button:hover { background: rgba(255,255,255,0.15); }
     button:active { transform: translateY(1px); }
     button.primary {
       background: var(--primary); color: #000; border: none; font-weight: 700;
     }
-    button.primary:hover { background: var(--primary-hover); box-shadow: 0 0 15px rgba(255,179,0,0.3); }
+    button.primary:hover { background: var(--primary-hover); box-shadow: 0 0 15px rgba(255,179,0,0.4); }
     button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
-    button.danger:hover { background: rgba(239,68,68,0.1); }
+    button.danger:hover { background: rgba(239,68,68,0.2); }
 
     /* 面板與卡片 */
     .card {
       background: var(--panel); border: 1px solid var(--line);
       border-radius: var(--radius); box-shadow: var(--shadow);
       margin-bottom: 20px;
+      backdrop-filter: blur(10px);
     }
     .card .hd {
       padding: 14px 18px; border-bottom: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255,255,255,0.02); border-radius: 12px 12px 0 0;
+      background: rgba(0,0,0,0.2); border-radius: 12px 12px 0 0;
     }
     .card .bd { padding: 18px; }
 
     /* 公平性稽核區 */
     .fair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
     .kv {
-      background: rgba(0,0,0,0.2); border: 1px solid var(--line); border-left: 3px solid var(--primary);
+      background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-left: 4px solid var(--primary);
       border-radius: 6px; padding: 12px;
     }
     .kv .k { font-size: 12px; color: var(--muted); text-transform: uppercase; }
-    .kv .v { margin-top: 6px; font-family: var(--font-mono); word-break: break-all; font-weight: 500; }
+    .kv .v { margin-top: 6px; font-family: var(--font-mono); word-break: break-all; font-weight: 500; font-size: 14px; }
 
     /* 動畫區：四大隊 */
     .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .brigades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
     
     .bcard {
-      background: var(--bg); border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+      background: rgba(0,0,0,0.4); border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
       display: flex; flex-direction: column;
     }
     .bhd {
       padding: 12px 14px; border-bottom: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
-      background: var(--panel2);
+      background: rgba(0,0,0,0.5);
     }
-    .bname { font-weight: 700; color: #fff; }
-    .badge { font-size: 12px; color: var(--muted); background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+    .bname { font-weight: 700; color: #fff; letter-spacing: 1px; }
+    .badge { font-size: 12px; color: var(--primary); background: rgba(255,179,0,0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,179,0,0.3); }
 
     /* 跑馬燈瀑布 (B) */
     .waterfall {
-      height: 180px; position: relative; overflow: hidden;
-      background: rgba(0,0,0,0.4);
+      height: 200px; position: relative; overflow: hidden;
+      background: rgba(0,0,0,0.6);
+      border-bottom: 1px solid var(--line);
     }
     .waterfall::after {
       content:""; position:absolute; left:0; right:0; top:0; height:40px;
-      background: linear-gradient(180deg, rgba(11,17,31,1), transparent); pointer-events:none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); pointer-events:none;
     }
     .waterfall::before {
       content:""; position:absolute; left:0; right:0; bottom:0; height:40px;
-      background: linear-gradient(0deg, rgba(11,17,31,1), transparent); pointer-events:none;
+      background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent); pointer-events:none;
     }
     .stream {
       position: absolute; left: 0; right: 0; top: 0; padding: 10px 14px;
-      font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: rgba(255,255,255,0.5);
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: rgba(255,255,255,0.4);
     }
     .pulse { animation: pulse 1s ease-in-out infinite; color: var(--primary); }
     @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
     /* 抽出的名單 */
-    .picked { padding: 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .picked { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; background: rgba(0,0,0,0.2); }
     .pitem {
       display: flex; gap: 10px; align-items: baseline;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
       border-radius: 6px; padding: 8px 10px; font-size: 14px;
     }
     .pno { width: 22px; color: var(--primary); font-family: var(--font-mono); font-weight: 700; }
     .ptext { flex: 1; }
-    .flash { animation: flash 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); border-color: var(--primary); background: rgba(255,179,0,0.1); }
+    .flash { animation: flash 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); border-color: var(--primary); background: rgba(255,179,0,0.15); }
     @keyframes flash { 0%{ background: var(--primary); color: #000; transform: scale(1.02); } 100%{} }
-
-    .hr { height: 1px; background: var(--line); margin: 16px 0; }
   </style>
 </head>
 <body>
 
   <div class="header-zone">
     <img src="./assets/logo.jpg" alt="TFD Logo" />
-    <h1>臺北市政府消防局 體能抽測抽籤系統（範例）</h1>
-    <div class="sub">模式：B (跑馬燈逐一鎖定) ｜ D (公平性稽核：Seed & Hash)</div>
+    <h1>臺北市政府消防局 體能抽測系統</h1>
+    <div class="sub">TFD FITNESS TEST RANDOMIZER</div>
   </div>
 
   <div class="wrap">
@@ -167,7 +172,7 @@
     <div class="card">
       <div class="hd">
         <div class="topbar">
-          <button class="primary" id="btnGen">生成 Demo 名單</button>
+          <button class="primary" id="btnGen">載入局內範例編制</button>
           <button id="btnDraw" style="border-color:var(--primary); color:var(--primary)">⚡ 開始抽籤</button>
           <button id="btnResult">下載抽籤結果 (CSV)</button>
           <span style="flex:1"></span>
@@ -183,8 +188,8 @@
         <div class="fair">
           <div class="kv"><div class="k">執行時間 (Time)</div><div class="v" id="kvTime">-</div></div>
           <div class="kv"><div class="k">隨機亂數種子 (Seed)</div><div class="v" id="kvSeed" style="color:var(--primary)">-</div></div>
-          <div class="kv"><div class="k">母體名單特徵碼 (SHA-256)</div><div class="v" id="kvHash">-</div></div>
-          <div class="kv"><div class="k">母體人數 (Population)</div><div class="v" id="kvCount">-</div></div>
+          <div class="kv"><div class="k">名單特徵碼 (SHA-256)</div><div class="v" id="kvHash">-</div></div>
+          <div class="kv"><div class="k">各隊母體人數 (Population)</div><div class="v" id="kvCount">-</div></div>
         </div>
       </div>
     </div>
@@ -192,7 +197,7 @@
     <!-- 動畫抽籤區 -->
     <div class="card">
       <div class="hd">
-        <div style="font-weight:700; letter-spacing:1px">▍ 抽籤作業監控面板</div>
+        <div style="font-weight:700; letter-spacing:1px; color:var(--primary);">▍ 抽籤作業監控面板</div>
         <div style="font-size:13px; color:var(--muted)">規則：四大隊獨立抽樣 / 隊內不重複</div>
       </div>
       <div class="bd">
@@ -240,8 +245,15 @@
   const lastNames = ["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","廖","賴","徐","周"];
   const firstNames = ["冠廷","承翰","子軒","柏宇","俊傑","家豪","宇辰","廷祐","哲維","昱翔","孟軒","建宏","彥廷",
                      "怡君","思妤","雅婷","佳穎","郁庭","語涵","品妍","鈺婷","婉如","子晴","佳蓉"];
-  const titles = ["隊員","小隊長","分隊長","隊員","駕駛","隊員"];
-  const units = ["一分隊","二分隊","三分隊","四分隊","五分隊","特搜分隊","救護分隊","安檢分隊"];
+  const titles = ["隊員","小隊長","分隊長","隊員","隊員","隊員","教官"];
+  
+  // 擬真 TFD 分隊
+  const unitMap = {
+    '1': ["泉州分隊","建國分隊","城中分隊","雙園分隊","龍山分隊","螢橋分隊","木柵分隊","景美分隊","寶橋分隊","興隆分隊"],
+    '2': ["信義分隊","南港分隊","大安分隊","莊敬分隊","安和分隊","復興分隊","舊莊分隊","金華分隊"],
+    '3': ["圓山分隊","中山分隊","松江分隊","大直分隊","松山分隊","中崙分隊","八德分隊","民權分隊"],
+    '4': ["劍潭分隊","大同分隊","後港分隊","社子分隊","天母分隊","福安分隊","士林分隊","石牌分隊","光明分隊","秀山分隊"]
+  };
 
   function pad(n, w){ return String(n).padStart(w,'0'); }
   function randPick(arr, rng){ return arr[Math.floor(rng()*arr.length)]; }
@@ -251,6 +263,7 @@
     const rows=[];
     for(let b=1;b<=4;b++){
       const used=new Set();
+      const units = unitMap[String(b)];
       for(let i=0;i<perBrigade;i++){
         let empId;
         do{ empId = String(b) + pad(Math.floor(rng()*10000),4); } while(used.has(empId));
@@ -400,7 +413,7 @@
       t++;
     }, 50);
 
-    await sleep(800);
+    await sleep(600);
 
     for(let i=0;i<picked.length;i++){
       await sleep(150 + i*10); // get slightly slower
@@ -416,14 +429,14 @@
     stream.classList.remove('pulse');
     stream.style.color = 'var(--ok)';
     stream.textContent = `DRAW COMPLETE.\nSELECTED ${picked.length} TARGETS.`;
-    await sleep(300);
+    await sleep(250);
   }
 
   // ---------- Init ----------
   setupBrigadeCards();
 
   el('btnGen').addEventListener('click', async () => {
-    const demo = genRoster(120); // 生成 120 人/隊
+    const demo = genRoster(100); // 測試用，每隊 100
     state.rosterRows = demo.rows;
     state.rosterCSV = toCSV(demo.rows);
     state.rosterHash = await sha256(state.rosterCSV);
@@ -432,7 +445,7 @@
   });
 
   el('btnDraw').addEventListener('click', async () => {
-    if(!state.rosterRows.length){ alert('母體名單為空，請先生成 Demo 名單。'); return; }
+    if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例編制。'); return; }
     el('btnDraw').disabled = true;
     setupBrigadeCards(); setFairPanel();
     await runDraw();

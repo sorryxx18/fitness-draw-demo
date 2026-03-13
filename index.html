@@ -108,23 +108,29 @@
     .kv .k { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
     .kv .v { margin-top: 6px; font-family: var(--font-mono); word-break: break-all; font-weight: 500; font-size: 14px; color: var(--secondary); }
 
-    /* 動畫區：四大隊 */
+    /* 動畫區：四大隊 (加入聚焦模式樣式) */
     .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    .brigades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    
+    /* 預設是多欄排列，如果進入 focus 模式，就隱藏未抽的 */
+    .brigades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; transition: all 0.5s ease; }
+    .brigades.focus-mode { grid-template-columns: 1fr; max-width: 800px; margin: 0 auto; }
     
     .bcard {
       background: #ffffff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
       display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-      transition: all 0.3s ease;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
+    .bcard.hidden-in-focus { display: none; } /* 聚焦模式隱藏其他卡片 */
+    
     .bcard.drawing {
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2), 0 10px 30px rgba(220,38,38,0.15);
       transform: scale(1.02);
       z-index: 10;
     }
     .bcard.done {
-      border-color: var(--ok, #10b981);
+      border-color: #10b981;
     }
     
     .bhd {
@@ -140,26 +146,67 @@
     .badge { font-size: 12px; color: var(--primary); background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-weight: 600; transition: all 0.3s; }
     .bcard.done .badge { color: #059669; background: #d1fae5; }
 
-    /* 跑馬燈瀑布 (B) */
-    .waterfall {
+    /* 結合倒數與瀑布的展示區 (A+B+E 綜合體) */
+    .display-zone {
       height: 200px; position: relative; overflow: hidden;
       background: #f8fafc;
       border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-    .waterfall::after {
+    
+    /* 雷達掃描背景 (E) */
+    .radar-bg {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, transparent 50%, rgba(220,38,38,0.03) 100%), 
+                  linear-gradient(90deg, transparent 49%, rgba(220,38,38,0.1) 50%, transparent 51%),
+                  linear-gradient(0deg, transparent 49%, rgba(220,38,38,0.1) 50%, transparent 51%);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .bcard.drawing .radar-bg { opacity: 1; animation: radar-spin 2s linear infinite; }
+    @keyframes radar-spin { 
+      0% { transform: scale(1.2) rotate(0deg); } 
+      100% { transform: scale(1.2) rotate(360deg); } 
+    }
+
+    /* 瀑布流遮罩 (B) */
+    .display-zone::after {
       content:""; position:absolute; left:0; right:0; top:0; height:30px;
       background: linear-gradient(180deg, #f8fafc, transparent); pointer-events:none; z-index: 2;
     }
-    .waterfall::before {
+    .display-zone::before {
       content:""; position:absolute; left:0; right:0; bottom:0; height:30px;
       background: linear-gradient(0deg, #f8fafc, transparent); pointer-events:none; z-index: 2;
     }
+    
+    /* 倒數計時大字 (A) */
+    .countdown-text {
+      font-size: 80px; font-weight: 900; color: var(--primary);
+      font-family: var(--font-mono);
+      opacity: 0; position: absolute; z-index: 3;
+      text-shadow: 2px 2px 0 rgba(220,38,38,0.2);
+    }
+    .countdown-text.active {
+      animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
     .stream {
       position: absolute; left: 0; right: 0; top: 0; padding: 10px 14px;
       font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: #94a3b8;
+      text-align: left; z-index: 1;
     }
     
-    /* 模糊滾動效果 */
+    /* 模糊滾動效果 (B) */
     .stream.blur-roll {
       animation: blur-roll 0.1s linear infinite;
       color: #cbd5e1;
@@ -173,32 +220,56 @@
     .pulse { animation: pulse 1s ease-in-out infinite; color: var(--primary); font-weight: 700;}
     @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 
-    /* 抽出的名單 */
-    .picked { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; background: #ffffff; min-height: 60px; }
+    /* 抽出的名單區塊 (C：卡片化排列) */
+    .picked { 
+      padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+      gap: 8px; flex: 1; background: #ffffff; min-height: 60px; 
+    }
+    /* 在聚焦模式下，名單可以排更多欄 */
+    .brigades.focus-mode .picked { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+
+    /* 單一名單卡片 (C 翻牌感 + E 雷達鎖定框) */
     .pitem {
-      display: flex; gap: 10px; align-items: baseline;
+      display: flex; flex-direction: column; gap: 4px;
       background: #ffffff; border: 1px solid #e2e8f0;
-      border-radius: 6px; padding: 8px 10px; font-size: 14px;
-      opacity: 0; transform: translateX(-20px);
-      animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      border-radius: 6px; padding: 10px; font-size: 14px;
+      position: relative; overflow: hidden;
+      
+      /* 預設隱藏準備翻轉 */
+      opacity: 0; transform: perspective(400px) rotateY(90deg);
+      animation: flipIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
-    @keyframes slideIn {
-      to { opacity: 1; transform: translateX(0); }
+    @keyframes flipIn {
+      to { opacity: 1; transform: perspective(400px) rotateY(0deg); }
     }
     
-    .pno { width: 22px; color: var(--primary); font-family: var(--font-mono); font-weight: 800; }
-    .ptext { flex: 1; color: var(--text); }
+    .pno { font-size: 12px; color: var(--primary); font-family: var(--font-mono); font-weight: 800; opacity: 0.7;}
+    .ptext { color: var(--text); display: flex; flex-direction: column;}
+    .ptext .unit { font-size: 12px; color: var(--muted); font-weight: 600;}
+    .ptext .name { font-size: 16px; font-weight: 800; color: var(--secondary); margin-top: 2px;}
+    .ptext .emp { font-family: var(--font-mono); font-size: 11px; color: #94a3b8; margin-top: 4px;}
     
-    .flash { animation: flash 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border-color: var(--primary); background: #fee2e2; }
-    @keyframes flash { 
-      0%{ background: var(--primary); color: #fff; transform: scale(1.05) translateX(0); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); } 
-      100%{ transform: scale(1) translateX(0); } 
+    /* 剛抽出的閃爍鎖定特效 (E) */
+    .flash { 
+      animation: flash-border 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), flipIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+    }
+    @keyframes flash-border { 
+      0%{ box-shadow: 0 0 0 2px var(--primary) inset, 0 4px 12px rgba(220, 38, 38, 0.3); background: #fef2f2; } 
+      100%{ box-shadow: none; background: #ffffff; } 
     }
     
     /* 勝利彩帶/粒子效果容器 */
     #confetti-canvas {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;
     }
+    
+    /* 遮罩背景 (用於聚焦模式) */
+    #overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(15, 23, 42, 0.8); z-index: 5; display: none;
+      backdrop-filter: blur(4px);
+    }
+    #overlay.active { display: block; }
   </style>
 </head>
 <body>
@@ -211,11 +282,11 @@
 
   <div class="wrap">
     <!-- 控制面板 -->
-    <div class="card">
+    <div class="card" style="position: relative; z-index: 6;">
       <div class="hd">
         <div class="topbar">
           <button class="primary" id="btnGen">載入局內範例編制</button>
-          <button id="btnDraw" style="border-color:var(--primary); color:var(--primary); background:#fff0f0;">⚡ 開始抽籤</button>
+          <button id="btnDraw" style="border-color:var(--primary); color:var(--primary); background:#fff0f0; font-size: 16px;">⚡ 開始抽籤 (聚焦展演模式)</button>
           <button id="btnResult">下載抽籤結果 (CSV)</button>
           <span style="flex:1"></span>
           <label>每隊抽：</label>
@@ -237,12 +308,13 @@
     </div>
 
     <!-- 動畫抽籤區 -->
-    <div class="card">
-      <div class="hd">
+    <div id="overlay"></div> <!-- 聚焦模式暗色遮罩 -->
+    <div class="card" style="position: relative; z-index: 6; background: transparent; border: none; box-shadow: none;">
+      <div class="hd" style="background: var(--panel2); border: 1px solid var(--line); border-radius: 12px 12px 0 0; position: relative; z-index: 10;">
         <div style="font-weight:800; letter-spacing:1px; color:var(--secondary);">▍ 抽籤作業監控面板</div>
         <div style="font-size:13px; color:var(--muted)">規則：四大隊獨立抽樣 / 隊內不重複</div>
       </div>
-      <div class="bd">
+      <div class="bd" style="background: var(--panel); border: 1px solid var(--line); border-top: none; border-radius: 0 0 12px 12px; position: relative; z-index: 10;">
         <div class="brigades" id="brigades"></div>
       </div>
     </div>
@@ -260,11 +332,11 @@
   
   function fireConfetti() {
     const colors = ['#dc2626', '#2563eb', '#FFB300', '#10b981', '#ffffff'];
-    for(let i=0; i<100; i++) {
+    for(let i=0; i<150; i++) {
       particles.push({
         x: canvas.width / 2, y: canvas.height / 2 + 100,
-        vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 1) * 20 - 5,
-        size: Math.random() * 8 + 4, color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 25, vy: (Math.random() - 1) * 25 - 5,
+        size: Math.random() * 10 + 5, color: colors[Math.floor(Math.random() * colors.length)],
         tilt: Math.floor(Math.random() * 10) - 10, tiltAngle: 0, tiltAngleInc: (Math.random() * 0.07) + 0.05
       });
     }
@@ -387,17 +459,27 @@
   function setupBrigadeCards(){
     const wrap = el('brigades');
     wrap.innerHTML='';
+    // 重置模式
+    wrap.classList.remove('focus-mode');
+    el('overlay').classList.remove('active');
+    
     for(let b=1;b<=4;b++){
       const id='b'+b;
       const card=document.createElement('div');
       card.className='bcard';
       card.id = `card_${b}`;
+      
+      // 綜合所有要素的結構
       card.innerHTML = `
         <div class="bhd">
           <div class="bname">${brigadeNames[String(b)]}</div>
           <div class="badge" id="${id}_count">人數: 0</div>
         </div>
-        <div class="waterfall"><div class="stream pulse" id="${id}_stream">SYSTEM IDLE<br>WAITING FOR ROSTER...</div></div>
+        <div class="display-zone" id="${id}_zone">
+          <div class="radar-bg"></div>
+          <div class="countdown-text" id="${id}_countdown">3</div>
+          <div class="stream pulse" id="${id}_stream">SYSTEM IDLE<br>WAITING FOR ROSTER...</div>
+        </div>
         <div class="picked" id="${id}_picked"></div>
       `;
       wrap.appendChild(card);
@@ -412,19 +494,19 @@
     el('kvCount').textContent = counts.reduce((acc,c,i)=>acc+(acc?' / ':'')+`${brigadeNames[String(i+1)]}:${c}`, '');
     for(let b=1;b<=4;b++){
       el('b'+b+'_count').textContent = `母體: ${counts[b-1]}`;
-      if(counts[b-1]>0) el('b'+b+'_stream').textContent = 'ROSTER LOADED.\nREADY TO DRAW.';
+      if(counts[b-1]>0) el('b'+b+'_stream').textContent = 'ROSTER LOADED.\nREADY FOR INITIATION.';
     }
   }
 
   function downloadText(filename, text, mime){
-    const blob = new Blob([text], {type: mime || 'text/csv;charset=utf-8-sig'}); // add BOM for Excel
+    const blob = new Blob([text], {type: mime || 'text/csv;charset=utf-8-sig'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
 
-  // ---------- Draw ----------
+  // ---------- Draw Logic ----------
   function groupRows(){
     const g={};
     for(let b=1;b<=4;b++) g[String(b)]=[];
@@ -457,20 +539,41 @@
 
     setFairPanel();
     const resultRows=[];
+    
+    // 啟動 F 聚焦模式 (開啟暗色遮罩，讓卡片變大)
+    const wrap = el('brigades');
+    wrap.classList.add('focus-mode');
+    el('overlay').classList.add('active');
 
-    // Animate B1 to B4 sequentially
+    // 依序執行四大隊
     for(let b=1;b<=4;b++){
       const key=String(b);
       const list = groups[key];
       const picked = pickN(list, n, rng);
+      
+      // 隱藏非當前大隊的卡片 (F)
+      for(let i=1;i<=4;i++) {
+        if(i == b) el(`card_${i}`).classList.remove('hidden-in-focus');
+        else el(`card_${i}`).classList.add('hidden-in-focus');
+      }
+      
       await animatePick(key, list, picked);
+      
       picked.forEach((r, idx) => {
         resultRows.push({ brigade:key, no: idx+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
       });
+      
+      // 隊與隊之間稍微暫停，讓大家看結果
+      if(b < 4) await sleep(1500); 
     }
 
     state.resultRows = resultRows;
-    state.resultCSV = '\uFEFF' + toResultCSV(resultRows); // BOM
+    state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
+    
+    // 結束聚焦模式，顯示所有結果
+    wrap.classList.remove('focus-mode');
+    el('overlay').classList.remove('active');
+    for(let i=1;i<=4;i++) el(`card_${i}`).classList.remove('hidden-in-focus');
     
     // 全劇終彩帶
     fireConfetti();
@@ -493,12 +596,25 @@
     const card = el('card_'+brigadeKey);
     const stream = el('b'+brigadeKey+'_stream');
     const pickedBox = el('b'+brigadeKey+'_picked');
+    const countdown = el('b'+brigadeKey+'_countdown');
     
     pickedBox.innerHTML='';
     card.classList.add('drawing');
-    stream.classList.add('blur-roll');
+    
+    // 準備階段：倒數計時 (A)
+    stream.style.opacity = 0; // 先隱藏瀑布
+    for(let c=3; c>=1; c--) {
+      countdown.textContent = c;
+      countdown.classList.remove('active');
+      void countdown.offsetWidth; // trigger reflow
+      countdown.classList.add('active');
+      await sleep(1000);
+    }
+    countdown.classList.remove('active');
+    stream.style.opacity = 1; // 顯示瀑布
 
-    // Waterfall roll
+    // 開始瀑布滾動 (B) + 雷達掃描 (E 背景已由 css .drawing 控制)
+    stream.classList.add('blur-roll');
     const linesShown = 7;
     let t=0;
     const rolling = setInterval(() => {
@@ -508,25 +624,34 @@
       t++;
     }, 50);
 
-    await sleep(800);
+    await sleep(600);
 
     for(let i=0;i<picked.length;i++){
-      // 抽籤速度變化：前幾個快，最後幾個慢，增加緊張感
-      let delay = 100;
+      // 變速緊張感
+      let delay = 120;
       if (i > picked.length - 5) delay = 250;
-      if (i === picked.length - 1) delay = 500;
+      if (i === picked.length - 1) delay = 600;
       
       await sleep(delay); 
       const r = picked[i];
+      
+      // 卡片化翻牌 (C) + 雷達鎖定框 (E)
       const item = document.createElement('div');
       item.className='pitem flash';
-      // 依序滑入動畫 (CSS 控制)
       item.style.animationDelay = '0s';
-      item.innerHTML = `<div class="pno">${String(i+1).padStart(2,'0')}</div><div class="ptext">${r.unit} <b>${r.name}</b> <span style="color:var(--muted);font-size:12px">(${r.empId})</span></div>`;
+      item.innerHTML = `
+        <div class="pno">#${String(i+1).padStart(2,'0')}</div>
+        <div class="ptext">
+          <span class="unit">${r.unit} ${r.title}</span>
+          <span class="name">${r.name}</span>
+          <span class="emp">ID: ${r.empId}</span>
+        </div>
+      `;
       pickedBox.appendChild(item);
       
       stream.classList.remove('blur-roll');
-      stream.textContent = `TARGET LOCKED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
+      stream.textContent = `[RADAR LOCK] TARGET ACQUIRED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
+      
       // 恢復模糊滾動
       if(i < picked.length - 1) {
         setTimeout(() => stream.classList.add('blur-roll'), 50);
@@ -538,23 +663,22 @@
     stream.classList.remove('pulse');
     card.classList.remove('drawing');
     card.classList.add('done');
-    stream.style.color = '#10b981'; // 成功綠
-    stream.textContent = `DRAW COMPLETE.\nSELECTED ${picked.length} TARGETS.`;
-    await sleep(400);
+    stream.style.color = '#10b981';
+    stream.textContent = `OPERATION COMPLETE.\n${picked.length} TARGETS EXTRACTED SUCCESSFULLY.`;
+    await sleep(500);
   }
 
   // ---------- Init ----------
   setupBrigadeCards();
 
   el('btnGen').addEventListener('click', async () => {
-    const demo = genRoster(100); // 測試用，每隊 100
+    const demo = genRoster(100); 
     state.rosterRows = demo.rows;
     state.rosterCSV = toCSV(demo.rows);
     state.rosterHash = await sha256(state.rosterCSV);
     state.drawSeed = ''; el('seed').value = '';
     setupBrigadeCards(); setFairPanel();
     
-    // 按鈕小回饋
     el('btnGen').textContent = "重新生成完畢 ✓";
     setTimeout(() => el('btnGen').textContent = "載入局內範例編制", 1500);
   });
@@ -562,10 +686,10 @@
   el('btnDraw').addEventListener('click', async () => {
     if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例編制。'); return; }
     el('btnDraw').disabled = true;
-    el('btnDraw').textContent = "抽籤進行中...";
+    el('btnDraw').textContent = "系統作業中...";
     setupBrigadeCards(); setFairPanel();
     await runDraw();
-    el('btnDraw').textContent = "⚡ 重新抽籤";
+    el('btnDraw').textContent = "⚡ 重新抽籤 (聚焦展演模式)";
     el('btnDraw').disabled = false;
   });
 

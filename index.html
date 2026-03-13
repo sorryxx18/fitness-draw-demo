@@ -649,6 +649,9 @@
       `;
       pickedBox.appendChild(item);
       
+      // 自動將畫面往下捲動，確保最新抽出的人名在可視範圍內
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
       stream.classList.remove('blur-roll');
       stream.textContent = `[RADAR LOCK] TARGET ACQUIRED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
       

@@ -323,6 +323,33 @@
   <canvas id="confetti-canvas"></canvas>
 
 <script>
+  // ---------- Sound Effects (Web Audio API) ----------
+  let audioCtx = null;
+  function initAudio() {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(freq, type, duration, vol=0.1) {
+    if(!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+  function playBeep() { playTone(880, 'sine', 0.1, 0.05); }
+  function playLock() { playTone(1200, 'square', 0.1, 0.05); setTimeout(()=>playTone(1600, 'square', 0.15, 0.05), 80); }
+  function playSuccess() { 
+    playTone(523.25, 'triangle', 0.2, 0.1); 
+    setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150); 
+    setTimeout(()=>playTone(783.99, 'triangle', 0.4, 0.1), 300); 
+  }
+
   // ---------- Confetti Animation ----------
   const canvas = document.getElementById('confetti-canvas');
   const ctx = canvas.getContext('2d');
@@ -577,6 +604,7 @@
     
     // 全劇終彩帶
     fireConfetti();
+    playSuccess();
   }
 
   function toResultCSV(rows){
@@ -604,6 +632,7 @@
     // 準備階段：倒數計時 (A)
     stream.style.opacity = 0; // 先隱藏瀑布
     for(let c=3; c>=1; c--) {
+      playBeep();
       countdown.textContent = c;
       countdown.classList.remove('active');
       void countdown.offsetWidth; // trigger reflow
@@ -648,9 +677,12 @@
         </div>
       `;
       pickedBox.appendChild(item);
+      playLock();
       
-      // 自動將畫面往下捲動，確保最新抽出的人名在可視範圍內
-      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // 自動將畫面往下捲動，確保最新抽出的人名在可視範圍內 (使用 document.documentElement.scrollHeight 更穩)
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 50);
       
       stream.classList.remove('blur-roll');
       stream.textContent = `[RADAR LOCK] TARGET ACQUIRED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
@@ -687,6 +719,7 @@
   });
 
   el('btnDraw').addEventListener('click', async () => {
+    initAudio();
     if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例編制。'); return; }
     el('btnDraw').disabled = true;
     el('btnDraw').textContent = "系統作業中...";

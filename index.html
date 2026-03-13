@@ -6,7 +6,6 @@
   <title>臺北市政府消防局 體能抽測抽籤系統（範例）</title>
   <style>
     :root{
-      /* 配合紅色 LOGO 的明亮/乾淨風格 */
       --bg: #f4f6f9;           
       --panel: #ffffff;        
       --panel2: #f8fafc;
@@ -40,6 +39,10 @@
     .header-zone img {
       height: 110px;
       margin-bottom: 16px;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .header-zone img:hover {
+      transform: scale(1.05) rotate(-3deg);
     }
     .header-zone h1 {
       margin: 0;
@@ -63,27 +66,30 @@
     input[type=text], input[type=number] {
       background: #ffffff; border: 1px solid #cbd5e1; color: var(--text);
       padding: 10px 12px; border-radius: 8px; outline: none; font-family: var(--font-mono);
+      transition: all 0.2s;
     }
-    input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); transform: translateY(-1px); }
     
     button {
       border: 1px solid #cbd5e1; background: #ffffff; color: var(--text);
       padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    button:hover { background: #f1f5f9; }
-    button:active { transform: translateY(1px); }
+    button:hover { background: #f1f5f9; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    button:active { transform: translateY(1px); box-shadow: none; }
     button.primary {
       background: var(--primary); color: #fff; border: none; font-weight: 700;
     }
-    button.primary:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); }
+    button.primary:hover { background: var(--primary-hover); box-shadow: 0 6px 12px rgba(220, 38, 38, 0.25); }
 
     /* 面板與卡片 */
     .card {
       background: var(--panel); border: 1px solid var(--line);
       border-radius: var(--radius); box-shadow: var(--shadow);
       margin-bottom: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+    .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
     .card .hd {
       padding: 14px 18px; border-bottom: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
@@ -96,7 +102,9 @@
     .kv {
       background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--secondary);
       border-radius: 6px; padding: 12px;
+      transition: all 0.3s;
     }
+    .kv:hover { border-left-width: 8px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .kv .k { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
     .kv .v { margin-top: 6px; font-family: var(--font-mono); word-break: break-all; font-weight: 500; font-size: 14px; color: var(--secondary); }
 
@@ -107,14 +115,30 @@
     .bcard {
       background: #ffffff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
       display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      transition: all 0.3s ease;
     }
+    .bcard.drawing {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+      transform: scale(1.02);
+      z-index: 10;
+    }
+    .bcard.done {
+      border-color: var(--ok, #10b981);
+    }
+    
     .bhd {
       padding: 12px 14px; border-bottom: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
       background: var(--panel2);
+      transition: background 0.3s;
     }
+    .bcard.drawing .bhd { background: #fee2e2; }
+    .bcard.done .bhd { background: #d1fae5; }
+    
     .bname { font-weight: 800; color: var(--secondary); letter-spacing: 1px; }
-    .badge { font-size: 12px; color: var(--primary); background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+    .badge { font-size: 12px; color: var(--primary); background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-weight: 600; transition: all 0.3s; }
+    .bcard.done .badge { color: #059669; background: #d1fae5; }
 
     /* 跑馬燈瀑布 (B) */
     .waterfall {
@@ -124,30 +148,57 @@
     }
     .waterfall::after {
       content:""; position:absolute; left:0; right:0; top:0; height:30px;
-      background: linear-gradient(180deg, #f8fafc, transparent); pointer-events:none;
+      background: linear-gradient(180deg, #f8fafc, transparent); pointer-events:none; z-index: 2;
     }
     .waterfall::before {
       content:""; position:absolute; left:0; right:0; bottom:0; height:30px;
-      background: linear-gradient(0deg, #f8fafc, transparent); pointer-events:none;
+      background: linear-gradient(0deg, #f8fafc, transparent); pointer-events:none; z-index: 2;
     }
     .stream {
       position: absolute; left: 0; right: 0; top: 0; padding: 10px 14px;
       font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: #94a3b8;
     }
+    
+    /* 模糊滾動效果 */
+    .stream.blur-roll {
+      animation: blur-roll 0.1s linear infinite;
+      color: #cbd5e1;
+    }
+    @keyframes blur-roll {
+      0% { transform: translateY(0); filter: blur(0px); }
+      50% { filter: blur(2px); }
+      100% { transform: translateY(-20px); filter: blur(0px); }
+    }
+    
     .pulse { animation: pulse 1s ease-in-out infinite; color: var(--primary); font-weight: 700;}
     @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 
     /* 抽出的名單 */
-    .picked { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; background: #ffffff; }
+    .picked { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; background: #ffffff; min-height: 60px; }
     .pitem {
       display: flex; gap: 10px; align-items: baseline;
       background: #ffffff; border: 1px solid #e2e8f0;
       border-radius: 6px; padding: 8px 10px; font-size: 14px;
+      opacity: 0; transform: translateX(-20px);
+      animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
+    @keyframes slideIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
     .pno { width: 22px; color: var(--primary); font-family: var(--font-mono); font-weight: 800; }
     .ptext { flex: 1; color: var(--text); }
-    .flash { animation: flash 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); border-color: var(--primary); background: #fee2e2; }
-    @keyframes flash { 0%{ background: var(--primary); color: #fff; transform: scale(1.02); } 100%{} }
+    
+    .flash { animation: flash 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border-color: var(--primary); background: #fee2e2; }
+    @keyframes flash { 
+      0%{ background: var(--primary); color: #fff; transform: scale(1.05) translateX(0); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); } 
+      100%{ transform: scale(1) translateX(0); } 
+    }
+    
+    /* 勝利彩帶/粒子效果容器 */
+    #confetti-canvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;
+    }
   </style>
 </head>
 <body>
@@ -197,7 +248,53 @@
     </div>
   </div>
 
+  <canvas id="confetti-canvas"></canvas>
+
 <script>
+  // ---------- Confetti Animation ----------
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let particles = [];
+  
+  function fireConfetti() {
+    const colors = ['#dc2626', '#2563eb', '#FFB300', '#10b981', '#ffffff'];
+    for(let i=0; i<100; i++) {
+      particles.push({
+        x: canvas.width / 2, y: canvas.height / 2 + 100,
+        vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 1) * 20 - 5,
+        size: Math.random() * 8 + 4, color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.floor(Math.random() * 10) - 10, tiltAngle: 0, tiltAngleInc: (Math.random() * 0.07) + 0.05
+      });
+    }
+    requestAnimationFrame(renderConfetti);
+  }
+  
+  function renderConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let active = false;
+    for(let i=0; i<particles.length; i++) {
+      const p = particles[i];
+      p.tiltAngle += p.tiltAngleInc;
+      p.y += (Math.cos(p.tiltAngle) + 1 + p.size / 2) / 2;
+      p.x += Math.sin(p.tiltAngle) * 2 + p.vx;
+      p.vy += 0.5; // gravity
+      p.y += p.vy;
+      
+      if(p.y <= canvas.height) active = true;
+      
+      ctx.beginPath();
+      ctx.lineWidth = p.size;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.size, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.size);
+      ctx.stroke();
+    }
+    if(active) requestAnimationFrame(renderConfetti);
+    else particles = [];
+  }
+
   // ---------- RNG Engine (xmur3 + sfc32) ----------
   function xmur3(str) {
     let h = 1779033703 ^ str.length;
@@ -294,6 +391,7 @@
       const id='b'+b;
       const card=document.createElement('div');
       card.className='bcard';
+      card.id = `card_${b}`;
       card.innerHTML = `
         <div class="bhd">
           <div class="bname">${brigadeNames[String(b)]}</div>
@@ -373,6 +471,9 @@
 
     state.resultRows = resultRows;
     state.resultCSV = '\uFEFF' + toResultCSV(resultRows); // BOM
+    
+    // 全劇終彩帶
+    fireConfetti();
   }
 
   function toResultCSV(rows){
@@ -389,10 +490,13 @@
   function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
 
   async function animatePick(brigadeKey, list, picked){
+    const card = el('card_'+brigadeKey);
     const stream = el('b'+brigadeKey+'_stream');
     const pickedBox = el('b'+brigadeKey+'_picked');
+    
     pickedBox.innerHTML='';
-    stream.classList.add('pulse');
+    card.classList.add('drawing');
+    stream.classList.add('blur-roll');
 
     // Waterfall roll
     const linesShown = 7;
@@ -404,23 +508,39 @@
       t++;
     }, 50);
 
-    await sleep(600);
+    await sleep(800);
 
     for(let i=0;i<picked.length;i++){
-      await sleep(150 + i*10); // get slightly slower
+      // 抽籤速度變化：前幾個快，最後幾個慢，增加緊張感
+      let delay = 100;
+      if (i > picked.length - 5) delay = 250;
+      if (i === picked.length - 1) delay = 500;
+      
+      await sleep(delay); 
       const r = picked[i];
       const item = document.createElement('div');
       item.className='pitem flash';
+      // 依序滑入動畫 (CSS 控制)
+      item.style.animationDelay = '0s';
       item.innerHTML = `<div class="pno">${String(i+1).padStart(2,'0')}</div><div class="ptext">${r.unit} <b>${r.name}</b> <span style="color:var(--muted);font-size:12px">(${r.empId})</span></div>`;
       pickedBox.appendChild(item);
+      
+      stream.classList.remove('blur-roll');
       stream.textContent = `TARGET LOCKED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
+      // 恢復模糊滾動
+      if(i < picked.length - 1) {
+        setTimeout(() => stream.classList.add('blur-roll'), 50);
+      }
     }
 
     clearInterval(rolling);
+    stream.classList.remove('blur-roll');
     stream.classList.remove('pulse');
-    stream.style.color = 'var(--primary)';
+    card.classList.remove('drawing');
+    card.classList.add('done');
+    stream.style.color = '#10b981'; // 成功綠
     stream.textContent = `DRAW COMPLETE.\nSELECTED ${picked.length} TARGETS.`;
-    await sleep(250);
+    await sleep(400);
   }
 
   // ---------- Init ----------
@@ -433,13 +553,19 @@
     state.rosterHash = await sha256(state.rosterCSV);
     state.drawSeed = ''; el('seed').value = '';
     setupBrigadeCards(); setFairPanel();
+    
+    // 按鈕小回饋
+    el('btnGen').textContent = "重新生成完畢 ✓";
+    setTimeout(() => el('btnGen').textContent = "載入局內範例編制", 1500);
   });
 
   el('btnDraw').addEventListener('click', async () => {
     if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例編制。'); return; }
     el('btnDraw').disabled = true;
+    el('btnDraw').textContent = "抽籤進行中...";
     setupBrigadeCards(); setFairPanel();
     await runDraw();
+    el('btnDraw').textContent = "⚡ 重新抽籤";
     el('btnDraw').disabled = false;
   });
 

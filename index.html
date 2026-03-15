@@ -6,28 +6,24 @@
   <title>臺北市政府消防局 體能抽測抽籤系統（範例）</title>
   <style>
     :root{
-      --bg: #f4f6f9;           
-      --panel: #ffffff;        
-      --panel2: #f8fafc;
-      --text: #1e293b;         
-      --muted: #64748b;
-      --primary: #dc2626;      /* 消防紅 */
-      --primary-hover: #b91c1c;
-      --secondary: #2563eb;    /* 消防藍 */
-      --danger: #ef4444;       
-      --line: #e2e8f0;
-      --shadow: 0 4px 20px rgba(0,0,0,0.05);
-      --radius: 12px;
+      --bg-dark: #0a0a15;
+      --bg-panel: #1a1a2e;
+      --accent-red: #dc2626;
+      --accent-blue: #2563eb;
+      --accent-gold: #FFB300;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
+    * { box-sizing: border-box; }
     body {
-      margin: 0; 
+      margin: 0;
       font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-      color: var(--text);
-      background-color: var(--bg);
+      background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a15 100%);
+      color: var(--text-light);
       min-height: 100vh;
     }
-    
+
     /* 頁首：置中大 LOGO + 標題 */
     .header-zone {
       text-align: center;
@@ -69,7 +65,7 @@
       transition: all 0.2s;
     }
     input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); transform: translateY(-1px); }
-    
+
     button {
       border: 1px solid #cbd5e1; background: #ffffff; color: var(--text);
       padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
@@ -110,11 +106,11 @@
 
     /* 動畫區：四大隊 (加入聚焦模式樣式) */
     .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    
+
     /* 預設是多欄排列，如果進入 focus 模式，就隱藏未抽的 */
     .brigades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; transition: all 0.5s ease; }
     .brigades.focus-mode { grid-template-columns: 1fr; max-width: 800px; margin: 0 auto; }
-    
+
     .bcard {
       background: #ffffff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
       display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
@@ -122,7 +118,7 @@
       position: relative;
     }
     .bcard.hidden-in-focus { display: none; } /* 聚焦模式隱藏其他卡片 */
-    
+
     .bcard.drawing {
       border-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2), 0 10px 30px rgba(220,38,38,0.15);
@@ -132,7 +128,7 @@
     .bcard.done {
       border-color: #10b981;
     }
-    
+
     .bhd {
       padding: 12px 14px; border-bottom: 1px solid var(--line);
       display: flex; justify-content: space-between; align-items: center;
@@ -141,7 +137,7 @@
     }
     .bcard.drawing .bhd { background: #fee2e2; }
     .bcard.done .bhd { background: #d1fae5; }
-    
+
     .bname { font-weight: 800; color: var(--secondary); letter-spacing: 1px; }
     .badge { font-size: 12px; color: var(--primary); background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-weight: 600; transition: all 0.3s; }
     .bcard.done .badge { color: #059669; background: #d1fae5; }
@@ -156,11 +152,11 @@
       justify-content: center;
       align-items: center;
     }
-    
+
     /* 雷達掃描背景 (E) */
     .radar-bg {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at center, transparent 50%, rgba(220,38,38,0.03) 100%), 
+      background: radial-gradient(circle at center, transparent 50%, rgba(220,38,38,0.03) 100%),
                   linear-gradient(90deg, transparent 49%, rgba(220,38,38,0.1) 50%, transparent 51%),
                   linear-gradient(0deg, transparent 49%, rgba(220,38,38,0.1) 50%, transparent 51%);
       background-size: 100% 100%, 40px 40px, 40px 40px;
@@ -169,9 +165,9 @@
       pointer-events: none;
     }
     .bcard.drawing .radar-bg { opacity: 1; animation: radar-spin 2s linear infinite; }
-    @keyframes radar-spin { 
-      0% { transform: scale(1.2) rotate(0deg); } 
-      100% { transform: scale(1.2) rotate(360deg); } 
+    @keyframes radar-spin {
+      0% { transform: scale(1.2) rotate(0deg); }
+      100% { transform: scale(1.2) rotate(360deg); }
     }
 
     /* 瀑布流遮罩 (B) */
@@ -183,7 +179,7 @@
       content:""; position:absolute; left:0; right:0; bottom:0; height:30px;
       background: linear-gradient(0deg, #f8fafc, transparent); pointer-events:none; z-index: 2;
     }
-    
+
     /* 倒數計時大字 (A) */
     .countdown-text {
       font-size: 80px; font-weight: 900; color: var(--primary);
@@ -205,7 +201,7 @@
       font-family: var(--font-mono); font-size: 13px; line-height: 1.8; color: #94a3b8;
       text-align: left; z-index: 1;
     }
-    
+
     /* 模糊滾動效果 (B) */
     .stream.blur-roll {
       animation: blur-roll 0.1s linear infinite;
@@ -216,14 +212,14 @@
       50% { filter: blur(2px); }
       100% { transform: translateY(-20px); filter: blur(0px); }
     }
-    
+
     .pulse { animation: pulse 1s ease-in-out infinite; color: var(--primary); font-weight: 700;}
     @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 
     /* 抽出的名單區塊 (C：卡片化排列) */
-    .picked { 
-      padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-      gap: 8px; flex: 1; background: #ffffff; min-height: 60px; 
+    .picked {
+      padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px; flex: 1; background: #ffffff; min-height: 60px;
     }
     /* 在聚焦模式下，名單可以排更多欄 */
     .brigades.focus-mode .picked { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
@@ -234,7 +230,7 @@
       background: #ffffff; border: 1px solid #e2e8f0;
       border-radius: 6px; padding: 10px; font-size: 14px;
       position: relative; overflow: hidden;
-      
+
       /* 預設隱藏準備翻轉 */
       opacity: 0; transform: perspective(400px) rotateY(90deg);
       animation: flipIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -242,30 +238,30 @@
     @keyframes flipIn {
       to { opacity: 1; transform: perspective(400px) rotateY(0deg); }
     }
-    
+
     .pno { font-size: 12px; color: var(--primary); font-family: var(--font-mono); font-weight: 800; opacity: 0.7;}
     .ptext { color: var(--text); display: flex; flex-direction: column;}
     .ptext .unit { font-size: 12px; color: var(--muted); font-weight: 600;}
     .ptext .name { font-size: 16px; font-weight: 800; color: var(--secondary); margin-top: 2px;}
     .ptext .emp { font-family: var(--font-mono); font-size: 11px; color: #94a3b8; margin-top: 4px;}
-    
+
     /* 剛抽出的閃爍鎖定特效 (E) */
-    .flash { 
-      animation: flash-border 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), flipIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+    .flash {
+      animation: flash-border 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), flipIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
-    @keyframes flash-border { 
-      0%{ box-shadow: 0 0 0 2px var(--primary) inset, 0 4px 12px rgba(220, 38, 38, 0.3); background: #fef2f2; } 
-      100%{ box-shadow: none; background: #ffffff; } 
+    @keyframes flash-border {
+      0%{ box-shadow: 0 0 0 2px var(--primary) inset, 0 4px 12px rgba(220, 38, 38, 0.3); background: #fef2f2; }
+      100%{ box-shadow: none; background: #ffffff; }
     }
-    
+
     /* 勝利彩帶/粒子效果容器 */
     #confetti-canvas {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;
     }
-    
+
     /* 遮罩背景 (用於聚焦模式) */
     #overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.8); z-index: 5; display: none;
       backdrop-filter: blur(4px);
     }
@@ -274,50 +270,48 @@
 </head>
 <body>
 
-  <div class="header-zone">
-    <img src="./assets/logo.jpg" alt="TFD Logo" />
-    <h1>臺北市政府消防局 體能抽測系統</h1>
-    <div class="sub">TFD FITNESS TEST RANDOMIZER</div>
-  </div>
+  <div class="stage-container">
+    <!-- 頂部：極簡資訊區 -->
+    <header class="stage-header">
+      <div class="logo-zone">
+        <img src="./assets/logo.jpg" alt="TFD Logo" class="logo" />
+        <h1>TFD 體能抽測抽籤系統</h1>
+      </div>
+      <div class="audit-bar">
+        Seed: <span id="kvSeed">-</span> | Time: <span id="kvTime">-</span> | SHA: <span id="kvHash">-</span>
+      </div>
+    </header>
 
-  <div class="wrap">
-    <!-- 控制面板 -->
-    <div class="card" style="position: relative; z-index: 6;">
-      <div class="hd">
-        <div class="topbar">
-          <button class="primary" id="btnGen">載入局內範例編制</button>
-          <button id="btnDraw" style="border-color:var(--primary); color:var(--primary); background:#fff0f0; font-size: 16px;">⚡ 開始抽籤 (聚焦展演模式)</button>
-          <button id="btnResult">下載抽籤結果 (CSV)</button>
-          <span style="flex:1"></span>
-          <label>每隊抽：</label>
-          <input id="pickCount" type="number" value="20" min="1" style="width:70px" />
-          <label>Seed：</label>
-          <input id="seed" type="text" placeholder="留空將自動生成時間戳" style="width:200px" />
-        </div>
+    <!-- 中央：巨型抽籤螢幕 -->
+    <main class="lotto-screen">
+      <div class="brigade-badge" id="currentBrigade">準備就緒</div>
+      <div class="big-display" id="bigDisplay">
+        <div class="display-label">即將抽出...</div>
+        <div class="rolling-name" id="rollingName">???</div>
+        <div class="display-hint">點擊「開始抽籤」開始</div>
       </div>
-      
-      <!-- 稽核區 -->
-      <div class="bd">
-        <div class="fair">
-          <div class="kv"><div class="k">執行時間 (Time)</div><div class="v" id="kvTime">-</div></div>
-          <div class="kv"><div class="k">隨機亂數種子 (Seed)</div><div class="v" id="kvSeed" style="color:var(--primary)">-</div></div>
-          <div class="kv"><div class="k">名單特徵碼 (SHA-256)</div><div class="v" id="kvHash">-</div></div>
-          <div class="kv"><div class="k">各隊母體人數 (Population)</div><div class="v" id="kvCount">-</div></div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 動畫抽籤區 -->
-    <div id="overlay"></div> <!-- 聚焦模式暗色遮罩 -->
-    <div class="card" style="position: relative; z-index: 6; background: transparent; border: none; box-shadow: none;">
-      <div class="hd" style="background: var(--panel2); border: 1px solid var(--line); border-radius: 12px 12px 0 0; position: relative; z-index: 10;">
-        <div style="font-weight:800; letter-spacing:1px; color:var(--secondary);">▍ 抽籤作業監控面板</div>
-        <div style="font-size:13px; color:var(--muted)">規則：四大隊獨立抽樣 / 隊內不重複</div>
+      <!-- 控制區 -->
+      <div class="control-panel">
+        <div class="input-group">
+          <label>每隊抽</label>
+          <input type="number" id="pickCount" value="20" min="1" />
+        </div>
+        <div class="input-group">
+          <label>Seed</label>
+          <input type="text" id="seed" placeholder="留空自動生成" />
+        </div>
+        <button id="btnGen" class="btn-secondary">載入範例</button>
+        <button id="btnDraw" class="btn-primary">開始抽籤</button>
+        <button id="btnResult" class="btn-secondary">下載 CSV</button>
       </div>
-      <div class="bd" style="background: var(--panel); border: 1px solid var(--line); border-top: none; border-radius: 0 0 12px 12px; position: relative; z-index: 10;">
-        <div class="brigades" id="brigades"></div>
-      </div>
-    </div>
+    </main>
+
+    <!-- 底部：得獎者展示牆 -->
+    <section class="winners-section">
+      <h2 class="section-title">抽中名單</h2>
+      <div class="winners-grid" id="winnersGrid"></div>
+    </section>
   </div>
 
   <canvas id="confetti-canvas"></canvas>
@@ -344,10 +338,10 @@
   }
   function playBeep() { playTone(880, 'sine', 0.1, 0.05); }
   function playLock() { playTone(1200, 'square', 0.1, 0.05); setTimeout(()=>playTone(1600, 'square', 0.15, 0.05), 80); }
-  function playSuccess() { 
-    playTone(523.25, 'triangle', 0.2, 0.1); 
-    setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150); 
-    setTimeout(()=>playTone(783.99, 'triangle', 0.4, 0.1), 300); 
+  function playSuccess() {
+    playTone(523.25, 'triangle', 0.2, 0.1);
+    setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150);
+    setTimeout(()=>playTone(783.99, 'triangle', 0.4, 0.1), 300);
   }
 
   // ---------- Confetti Animation ----------
@@ -356,7 +350,7 @@
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   let particles = [];
-  
+
   function fireConfetti() {
     const colors = ['#dc2626', '#2563eb', '#FFB300', '#10b981', '#ffffff'];
     for(let i=0; i<150; i++) {
@@ -369,7 +363,7 @@
     }
     requestAnimationFrame(renderConfetti);
   }
-  
+
   function renderConfetti() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let active = false;
@@ -380,9 +374,9 @@
       p.x += Math.sin(p.tiltAngle) * 2 + p.vx;
       p.vy += 0.5; // gravity
       p.y += p.vy;
-      
+
       if(p.y <= canvas.height) active = true;
-      
+
       ctx.beginPath();
       ctx.lineWidth = p.size;
       ctx.strokeStyle = p.color;
@@ -433,7 +427,7 @@
   const firstNames = ["冠廷","承翰","子軒","柏宇","俊傑","家豪","宇辰","廷祐","哲維","昱翔","孟軒","建宏","彥廷",
                      "怡君","思妤","雅婷","佳穎","郁庭","語涵","品妍","鈺婷","婉如","子晴","佳蓉"];
   const titles = ["隊員","小隊長","分隊長","隊員","隊員","隊員","教官"];
-  
+
   // 擬真 TFD 分隊
   const unitMap = {
     '1': ["泉州分隊","建國分隊","城中分隊","雙園分隊","龍山分隊","螢橋分隊","木柵分隊","景美分隊","寶橋分隊","興隆分隊"],
@@ -489,13 +483,13 @@
     // 重置模式
     wrap.classList.remove('focus-mode');
     el('overlay').classList.remove('active');
-    
+
     for(let b=1;b<=4;b++){
       const id='b'+b;
       const card=document.createElement('div');
       card.className='bcard';
       card.id = `card_${b}`;
-      
+
       // 綜合所有要素的結構
       card.innerHTML = `
         <div class="bhd">
@@ -566,7 +560,7 @@
 
     setFairPanel();
     const resultRows=[];
-    
+
     // 啟動 F 聚焦模式 (開啟暗色遮罩，讓卡片變大)
     const wrap = el('brigades');
     wrap.classList.add('focus-mode');
@@ -577,31 +571,31 @@
       const key=String(b);
       const list = groups[key];
       const picked = pickN(list, n, rng);
-      
+
       // 隱藏非當前大隊的卡片 (F)
       for(let i=1;i<=4;i++) {
         if(i == b) el(`card_${i}`).classList.remove('hidden-in-focus');
         else el(`card_${i}`).classList.add('hidden-in-focus');
       }
-      
+
       await animatePick(key, list, picked);
-      
+
       picked.forEach((r, idx) => {
         resultRows.push({ brigade:key, no: idx+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
       });
-      
+
       // 隊與隊之間稍微暫停，讓大家看結果
-      if(b < 4) await sleep(1500); 
+      if(b < 4) await sleep(1500);
     }
 
     state.resultRows = resultRows;
     state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
-    
+
     // 結束聚焦模式，顯示所有結果
     wrap.classList.remove('focus-mode');
     el('overlay').classList.remove('active');
     for(let i=1;i<=4;i++) el(`card_${i}`).classList.remove('hidden-in-focus');
-    
+
     // 全劇終彩帶
     fireConfetti();
     playSuccess();
@@ -625,10 +619,10 @@
     const stream = el('b'+brigadeKey+'_stream');
     const pickedBox = el('b'+brigadeKey+'_picked');
     const countdown = el('b'+brigadeKey+'_countdown');
-    
+
     pickedBox.innerHTML='';
     card.classList.add('drawing');
-    
+
     // 準備階段：倒數計時 (A)
     stream.style.opacity = 0; // 先隱藏瀑布
     for(let c=3; c>=1; c--) {
@@ -660,10 +654,10 @@
       let delay = 120;
       if (i > picked.length - 5) delay = 250;
       if (i === picked.length - 1) delay = 600;
-      
-      await sleep(delay); 
+
+      await sleep(delay);
       const r = picked[i];
-      
+
       // 卡片化翻牌 (C) + 雷達鎖定框 (E)
       const item = document.createElement('div');
       item.className='pitem flash';
@@ -678,15 +672,15 @@
       `;
       pickedBox.appendChild(item);
       playLock();
-      
+
       // 自動將畫面往下捲動，確保最新抽出的人名在可視範圍內 (使用 document.documentElement.scrollHeight 更穩)
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }, 50);
-      
+
       stream.classList.remove('blur-roll');
       stream.textContent = `[RADAR LOCK] TARGET ACQUIRED: ${r.empId}\n${fmtRow(r)}\n\n` + stream.textContent;
-      
+
       // 恢復模糊滾動
       if(i < picked.length - 1) {
         setTimeout(() => stream.classList.add('blur-roll'), 50);
@@ -707,13 +701,13 @@
   setupBrigadeCards();
 
   el('btnGen').addEventListener('click', async () => {
-    const demo = genRoster(100); 
+    const demo = genRoster(100);
     state.rosterRows = demo.rows;
     state.rosterCSV = toCSV(demo.rows);
     state.rosterHash = await sha256(state.rosterCSV);
     state.drawSeed = ''; el('seed').value = '';
     setupBrigadeCards(); setFairPanel();
-    
+
     el('btnGen').textContent = "重新生成完畢 ✓";
     setTimeout(() => el('btnGen').textContent = "載入局內範例編制", 1500);
   });

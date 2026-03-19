@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>臺北市政府消防局 - 體能抽測抽籤系統 </title>
+  <title>臺北市政府消防局 - 體能抽測抽籤系統 (正式營運版)</title>
   
   <!-- 導入專業官方字型 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +37,6 @@
       font-family: var(--font-main);
       color: var(--text-dark);
       min-height: 100vh;
-      /* 動態流動漸層背景 */
       background: linear-gradient(125deg, #ffffff 0%, #f0f2f5 30%, #ffffff 60%, #e8eff7 100%);
       background-size: 400% 400%;
       animation: fluidMove 15s ease infinite;
@@ -234,6 +233,7 @@
       margin-top: 15px; border-top: 1px dashed #e0e0e0; padding-top: 12px; 
     }
 
+    /* 紙屑特效畫布 */
     #confettiCanvas { 
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       pointer-events: none; z-index: 9999; 
@@ -335,60 +335,29 @@
 
 <script>
   /* =========================================================================
-     [系統狀態與 DOM 宣告]
-     嚴謹宣告所有使用到的變數，避免全域污染。
+     [系統狀態宣告]
+     嚴謹管理所有資料流，避免全域變數污染。
   ========================================================================= */
   const state = {
     fileHash: '',       // 名冊 SHA-256
-    rows:[],           // 完整名單
+    rows: [],           // 完整名單
     unitsMap: {},       // 以單位分類的名單
     result:[],         // 抽出的結果
     seed: '',           // 當前使用的 Seed
-    isDrawing: false,   // 是否正在抽籤中 (UI 防護鎖)
-    skipAnimation: false, // 是否略過動畫
+    isDrawing: false,   // 是否正在抽籤中 (用於 UI 防護鎖)
+    skipAnimation: false, 
     hasDrawn: false     // 是否已經抽過 (防呆)
   };
 
-  const UI = {
-    csvFileInput: document.getElementById('csvFileInput'),
-    dashHash: document.getElementById('dashHash'),
-    dashSeed: document.getElementById('dashSeed'),
-    seedInput: document.getElementById('seedInput'),
-    quotaList: document.getElementById('quotaList'),
-    checkAllBtn: document.getElementById('checkAllBtn'),
-    globalQuotaInput: document.getElementById('globalQuotaInput'),
-    btnApplyGlobal: document.getElementById('btnApplyGlobal'),
-    turboMode: document.getElementById('turboMode'),
-    btnStartDraw: document.getElementById('btnStartDraw'),
-    stageArea: document.getElementById('stageArea'),
-    stageScreen: document.getElementById('stageScreen'),
-    drawProgress: document.getElementById('drawProgress'),
-    dispUnit: document.getElementById('dispUnit'),
-    dispName: document.getElementById('dispName'),
-    skipBtn: document.getElementById('skipBtn'),
-    winnersGrid: document.getElementById('winnersGrid'),
-    btnExportResult: document.getElementById('btnExportResult'),
-    btnLoadDemo: document.getElementById('btnLoadDemo'),
-    btnDownloadSample: document.getElementById('btnDownloadSample'),
-    // 所有操作按鈕 (用於在抽籤時上鎖)
-    allInputs: document.querySelectorAll('input, button')
-  };
-
+  // 簡化取得 DOM 元素的 Helper，提升可讀性
+  const el = id => document.getElementById(id);
   const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-  // 網頁離開防呆警告
+  // 網頁離開防呆警告：避免抽籤抽到一半手殘關掉網頁
   window.addEventListener('beforeunload', (e) => {
     if (state.isDrawing) {
       e.returnValue = '抽籤程序正在進行中，離開將遺失所有資料！';
     }
-  });
-
-  /* =========================================================================
-     [初始化]
-     頁面載入時，自動產生測試資料並設定就緒狀態
-  ========================================================================= */
-  window.addEventListener('DOMContentLoaded', () => { 
-    loadDemoData(); 
   });
 
 
@@ -396,16 +365,17 @@
      這區塊保證抽籤的公平性與不可篡改性
   ========================================================================= */
   
-  // 計算 SHA-256 數位指紋
+  // 計算 SHA-256 數位指紋 (防呆：若環境不支援則安全回退)
   async function sha256(text) {
     try {
+      if (!crypto || !crypto.subtle) return "UNSECURE-ENV";
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
       return Array.from(new Uint8Array(buf))
                   .map(b => b.toString(16).padStart(2, '0'))
                   .join('').toUpperCase();
     } catch (err) {
-      console.error("SHA256 計算失敗", err);
-      return "HASH_ERROR";
+      console.warn("SHA256 計算失敗", err);
+      return "HASH-ERROR";
     }
   }
 
@@ -423,7 +393,7 @@
     }
   }
 
-  // sfc32 偽隨機數生成器 (PRNG)
+  // sfc32 偽隨機數生成器 (PRNG) - 保證在相同 Seed 下，抽取順序 100% 相同
   function sfc32(a, b, c, d) {
     return function() {
       a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
@@ -438,12 +408,24 @@
     }
   }
 
+
   /* =========================================================================[專業音效與紙屑物理引擎]
   ========================================================================= */
   let audioCtx = null;
+  
+  // 嚴謹的音效初始化，避免因為瀏覽器限制導致整個程式 Crash
   function initAudio() { 
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-    if(audioCtx.state === 'suspended') audioCtx.resume(); 
+    try {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      console.warn("音效引擎初始化失敗 (可能是瀏覽器安全限制)", e);
+    }
   }
 
   // 基礎音效合成器
@@ -460,7 +442,7 @@
       gain.connect(audioCtx.destination);
       osc.start(); 
       osc.stop(audioCtx.currentTime + dur);
-    } catch(e) { /* 忽略音效失敗 */ }
+    } catch(e) {}
   }
 
   const sndCountdown = () => playBeep(330, 'square', 0.15, 0.05);
@@ -472,9 +454,11 @@
     try {
       if(!audioCtx) return;
       const tones =[523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-      tones.forEach((t, i) => { setTimeout(() => playBeep(t, 'sine', 0.6, 0.1), i * 150); });
+      tones.forEach((t, i) => { 
+        setTimeout(() => playBeep(t, 'sine', 0.6, 0.1), i * 150); 
+      });
       
-      // 白噪音模擬掌聲
+      // 白噪音模擬歡呼掌聲
       for(let i=0; i<15; i++) {
         setTimeout(() => {
           const noise = audioCtx.createBufferSource();
@@ -489,20 +473,20 @@
           noise.start();
         }, 500 + i * 40);
       }
-    } catch(e) { /* 忽略音效失敗 */ }
+    } catch(e) {}
   }
 
   // 3D 物理禮炮引擎
-  const canvas = document.getElementById('confettiCanvas');
+  const canvas = el('confettiCanvas');
   const ctx = canvas.getContext('2d');
   let particles =[];
   let confettiAnimId = null;
 
   function fireGrandConfetti() {
     if(confettiAnimId) cancelAnimationFrame(confettiAnimId);
-    particles =[];
+    particles = [];
     const colors =['#D32F2F', '#1976D2', '#FFC107', '#FFFFFF', '#000000'];
-    const launchers =[0.1, 0.5, 0.9]; // 左下、中間、右下
+    const launchers =[0.1, 0.5, 0.9]; // 左下、中間、右下三個噴發口
     
     launchers.forEach(lx => {
       for(let i=0; i<80; i++) {
@@ -529,7 +513,7 @@
     particles.forEach(p => {
       p.tiltAngle += p.wobbleSpeed; 
       p.x += p.vx; 
-      p.vy += 0.45; // 重力
+      p.vy += 0.45;  // 擬真重力
       p.y += p.vy; 
       p.vx *= 0.985; // 空氣阻力
       
@@ -538,7 +522,7 @@
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.tiltAngle);
-      ctx.scale(Math.sin(p.tiltAngle), 1); // 模擬 3D 翻轉
+      ctx.scale(Math.sin(p.tiltAngle), 1); // 模擬 3D 紙片翻轉
       ctx.fillStyle = p.color;
       if(p.shape === 'rect') {
         ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*1.3);
@@ -556,12 +540,11 @@
   }
 
 
-  /* =========================================================================
-     [CSV 解析與資料流處理] 
-     嚴謹的防呆設計，處理逗號與換行
+  /* =========================================================================[CSV 解析與資料流處理] 
+     嚴謹的防呆設計，妥善處理異常符號與逗號
   ========================================================================= */
   
-  // 嚴謹的 CSV 單行解析器 (支援處理雙引號內的逗號)
+  // 嚴謹的 CSV 單行解析器 (支援處理雙引號內的逗號，不會把名字切斷)
   function parseCSVRow(str) {
     const result =[];
     let curVal = '';
@@ -584,17 +567,18 @@
 
   async function processCSV(text) {
     try {
-      // 計算 Hash
+      // 1. 計算 Hash 並更新 UI
       state.fileHash = (await sha256(text)).slice(0, 16);
-      UI.dashHash.textContent = state.fileHash;
+      el('dashHash').textContent = state.fileHash;
       
+      // 2. 清理與解析資料
       const lines = text.split('\n').filter(l => l.trim().length > 0);
       if(lines.length < 2) throw new Error("檔案內容過少或沒有標題列。");
       
       state.rows =[]; 
       state.unitsMap = {};
       
-      // 跳過標題列，從 i=1 開始
+      // 跳過標題列，從 i=1 開始讀取
       for(let i=1; i<lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if(cols.length >= 4) {
@@ -606,28 +590,31 @@
             title: cols[4] || '' 
           };
           state.rows.push(row);
-          if(!state.unitsMap[row.unit]) state.unitsMap[row.unit] = [];
+          if(!state.unitsMap[row.unit]) {
+            state.unitsMap[row.unit] = [];
+          }
           state.unitsMap[row.unit].push(row);
         }
       }
       
       if (state.rows.length === 0) throw new Error("無法解析出有效的名單資料。");
       
+      // 3. 渲染操作面板並解鎖抽籤按鈕
       renderQuotaPanel(); 
-      UI.btnStartDraw.disabled = false;
+      el('btnStartDraw').disabled = false;
       
     } catch (err) {
       console.error(err);
       alert("解析名單時發生錯誤：" + err.message);
-      UI.btnStartDraw.disabled = true;
+      el('btnStartDraw').disabled = true;
     }
   }
 
-  // 渲染動態面板
+  // 渲染動態單位名額面板
   function renderQuotaPanel() {
-    UI.quotaList.innerHTML = '';
+    el('quotaList').innerHTML = '';
     
-    // 按照單位名稱排序顯示
+    // 按照單位名稱自然排序顯示
     Object.keys(state.unitsMap).sort().forEach(unit => {
       const count = state.unitsMap[unit].length;
       const div = document.createElement('div'); 
@@ -646,17 +633,21 @@
           人
         </div>
       `;
-      UI.quotaList.appendChild(div);
+      el('quotaList').appendChild(div);
     });
     
-    // 渲染完畢自動套用全域設定
+    // 渲染完畢自動套用全域預設人數 (20人)
     applyGlobalQuota();
   }
 
-  // 檔案事件
-  UI.csvFileInput.addEventListener('change', async (e) => {
+
+  /* =========================================================================[UI 互動與控制事件綁定]
+  ========================================================================= */
+  
+  // 1. 檔案上傳事件
+  el('csvFileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
-    if(!file) return; // 使用者按取消
+    if(!file) return; 
     try {
       const text = await file.text();
       await processCSV(text);
@@ -666,45 +657,52 @@
     e.target.value = ''; // 允許重複上傳相同檔案
   });
 
-
-  /* =========================================================================
-     [UI 互動與控制按鈕]
-  ========================================================================= */
-  
-  UI.checkAllBtn.addEventListener('change', (e) => {
+  // 2. 全選單位
+  el('checkAllBtn').addEventListener('change', (e) => {
     document.querySelectorAll('.u-cb').forEach(c => c.checked = e.target.checked);
   });
 
-  UI.btnApplyGlobal.addEventListener('click', applyGlobalQuota);
+  // 3. 批次套用人數
+  el('btnApplyGlobal').addEventListener('click', applyGlobalQuota);
 
   function applyGlobalQuota() {
-    const num = parseInt(UI.globalQuotaInput.value, 10);
+    const num = parseInt(el('globalQuotaInput').value, 10);
     if(isNaN(num) || num < 0) return alert('請輸入有效的數字');
     
     document.querySelectorAll('.u-num').forEach(input => {
       const max = parseInt(input.getAttribute('max'), 10);
       input.value = Math.min(num, max);
     });
-    UI.checkAllBtn.checked = true;
+    el('checkAllBtn').checked = true;
     document.querySelectorAll('.u-cb').forEach(c => c.checked = true);
   }
 
-  UI.btnLoadDemo.addEventListener('click', loadDemoData);
+  // 4. 載入假名冊測試資料 (修正語法結構，確保穩定性)
+  el('btnLoadDemo').addEventListener('click', loadDemoData);
   
   function loadDemoData() {
     let csv = "大隊,分隊,員編,姓名,職稱\n";
-    const last =["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪"];
-    const first =["家豪","冠廷","承翰","子軒","俊傑","彥廷","怡君","雅婷","欣怡","志偉","建宏"];["第一大隊","第二大隊","第三大隊","第四大隊"].forEach((u, idx) => {
-      for(let i=1; i<=80; i++) {
-        const name = last[Math.floor(Math.random()*last.length)] + first[Math.floor(Math.random()*first.length)];
-        csv += `${u},${u.charAt(0)}區分隊,TFD-${idx+1}-${String(i).padStart(3,'0')},${name},隊員\n`;
+    const lastNames =["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪"];
+    const firstNames =["家豪","冠廷","承翰","子軒","俊傑","彥廷","怡君","雅婷","欣怡","志偉","建宏"];
+    const units =["第一大隊","第二大隊","第三大隊","第四大隊"];
+    
+    units.forEach((unit, idx) => {
+      // 為每個大隊生成 80 筆資料
+      for(let i = 1; i <= 80; i++) {
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const name = lastName + firstName;
+        const empId = "TFD-" + (idx + 1) + "-" + String(i).padStart(3, '0');
+        csv += `${unit},${unit.charAt(0)}區分隊,${empId},${name},隊員\n`;
       }
     });
+    
     processCSV(csv);
   }
 
-  UI.btnDownloadSample.addEventListener('click', () => {
-    // 加入 BOM 解決 Excel 中文亂碼
+  // 5. 下載公版範例
+  el('btnDownloadSample').addEventListener('click', () => {
+    // 加上 \uFEFF BOM 解決 Excel 中文亂碼問題
     const content = "\uFEFF大隊,分隊,員編,姓名,職稱\n第一大隊,城中分隊,A1001,王大明,隊員\n第二大隊,信義分隊,B2001,陳小華,小隊長";
     const blob = new Blob([content], {type: 'text/csv;charset=utf-8-sig'});
     const a = document.createElement('a'); 
@@ -715,68 +713,73 @@
 
 
   /* =========================================================================
-     [核心抽籤邏輯與大螢幕控制]
+     [核心：抽籤邏輯與大螢幕控制]
+     極度嚴謹的安全鎖與例外處理
   ========================================================================= */
   
-  // 鎖定 UI 避免抽籤中誤觸
+  // 鎖定 UI 避免抽籤中途手殘點到其他按鈕導致崩潰
   function lockUI(locked) {
     state.isDrawing = locked;
-    document.querySelectorAll('input, button').forEach(el => {
-      // 排除「跳過按鈕」
-      if(el.id !== 'skipBtn') el.disabled = locked;
+    document.querySelectorAll('input, button').forEach(element => {
+      // 除了「跳過動畫按鈕」以外，全部上鎖
+      if(element.id !== 'skipBtn') {
+        element.disabled = locked;
+      }
     });
   }
 
-  UI.btnStartDraw.addEventListener('click', async () => {
-    // 防呆確認
-    if(state.hasDrawn && !confirm("您已經抽過籤了，重新啟動將會【覆蓋現有名單】。確定要重新抽籤嗎？")) return;
+  el('btnStartDraw').addEventListener('click', async () => {
+    // 雙重防護鎖
+    if (state.isDrawing) return; 
+    if (state.hasDrawn && !confirm("您已經抽過籤了，重新啟動將會【清空現有名單】。確定要重新抽籤嗎？")) return;
     
-    // 初始化音效 (必須在使用者點擊事件內執行)
-    initAudio();
+    initAudio(); // 啟用音效引擎
     
-    // 收集勾選的任務
+    // 1. 收集待抽籤任務
     const tasks =[];
     document.querySelectorAll('.quota-item').forEach(item => {
       const isChecked = item.querySelector('.u-cb').checked;
-      const quotaStr = item.querySelector('.u-num').value;
-      const count = parseInt(quotaStr, 10);
+      const count = parseInt(item.querySelector('.u-num').value, 10);
       if(isChecked && count > 0) {
         tasks.push({ unit: item.querySelector('.u-cb').value, count: count });
       }
     });
     
-    if(tasks.length === 0) return alert("請至少勾選一個單位，並設定大於 0 的人數。");
+    if(tasks.length === 0) {
+      alert("請至少勾選一個單位，並設定大於 0 的人數。");
+      return;
+    }
 
-    // UI 狀態切換
+    // 2. UI 狀態切換與上鎖
     lockUI(true);
-    UI.stageArea.style.display = 'block';
-    UI.winnersGrid.innerHTML = '';
+    el('stageArea').style.display = 'block';
+    el('winnersGrid').innerHTML = '';
     state.skipAnimation = false; 
     state.result =[];
 
-    // 處理 Seed 稽核碼
-    const customSeed = UI.seedInput.value.trim();
-    // 如果留空，自動產生亂碼。否則使用使用者指定的密碼。
+    // 3. 處理 Seed 稽核碼
+    const customSeed = el('seedInput').value.trim();
+    // 若使用者未輸入，系統自動產生亂碼
     state.seed = customSeed !== "" ? customSeed : ("TFD-" + Math.random().toString(36).substr(2,6).toUpperCase());
     
-    // 回填介面
-    UI.dashSeed.textContent = state.seed; 
-    UI.seedInput.value = state.seed;
+    // 回填介面看板
+    el('dashSeed').textContent = state.seed; 
+    el('seedInput').value = state.seed;
     
-    // 產生 PRNG 實例 (整個抽籤過程共用同一個 PRNG，確保連續亂數序列可重現)
+    // 初始化 PRNG 亂數生成器 (確保抽籤的嚴謹與可重現)
     const gen = xmur3(state.seed); 
     const rng = sfc32(gen(), gen(), gen(), gen());
 
     try {
-      // 逐一處理每個大隊
-      for(const task of tasks) {
+      // 4. 依序執行每個大隊的抽籤程序
+      for (const task of tasks) {
         await runDrawStep(task.unit, task.count, rng);
       }
       
-      // 完成慶祝
-      UI.dispName.textContent = "抽籤圓滿完成"; 
-      UI.dispName.classList.add('highlight');
-      UI.drawProgress.textContent = "DONE";
+      // 5. 抽籤圓滿完成，觸發慶祝特效
+      el('dispName').textContent = "抽籤圓滿完成"; 
+      el('dispName').classList.add('highlight');
+      el('drawProgress').textContent = "DONE";
       
       fireGrandConfetti(); 
       playFanfare(); 
@@ -786,15 +789,17 @@
       console.error(error);
       alert("抽籤過程中發生非預期錯誤：" + error.message);
     } finally {
+      // 無論成功或失敗，最後一定要解鎖 UI
       lockUI(false);
     }
   });
 
-  UI.skipBtn.addEventListener('click', () => { state.skipAnimation = true; });
+  // 允許使用者中途略過動畫
+  el('skipBtn').addEventListener('click', () => { state.skipAnimation = true; });
 
   async function runDrawStep(unitName, count, rng) {
-    // 1. 複製該單位的名單，避免修改原始資料
-    const candidates =[...state.unitsMap[unitName]];
+    // 1. 複製該單位的名單，避免修改原始母體資料
+    const candidates = [...state.unitsMap[unitName]];
     
     // 2. 絕對公平的 Fisher-Yates 洗牌演算法 (嚴謹防重複)
     for(let i = candidates.length - 1; i > 0; i--) {
@@ -804,77 +809,78 @@
     
     // 3. 擷取前 N 名作為得獎者
     const winners = candidates.slice(0, count);
-    const isTurbo = UI.turboMode.checked;
+    const isTurbo = el('turboMode').checked;
 
-    // 更新大螢幕準備狀態
-    UI.dispUnit.textContent = `現在抽取：${unitName}`;
-    UI.dispName.classList.remove('highlight');
-    UI.stageScreen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 4. 更新大螢幕看板
+    el('dispUnit').textContent = `現在抽取：${unitName}`;
+    el('dispName').classList.remove('highlight');
+    el('stageScreen').scrollIntoView({ behavior: 'smooth', block: 'center' });
     await sleep(800);
 
-    // 儀式感倒數
+    // 5. 儀式感倒數 (若未開啟極速模式)
     if(!isTurbo && !state.skipAnimation) {
-      for(const v of['3', '2', '1']) {
+      for(const v of ['3', '2', '1']) {
         if(state.skipAnimation) break;
-        UI.dispName.textContent = v; 
+        el('dispName').textContent = v; 
         sndCountdown(); 
         await sleep(700);
       }
       if(!state.skipAnimation) { 
-        UI.dispName.textContent = "GO!"; 
+        el('dispName').textContent = "GO!"; 
         sndGo(); 
         await sleep(500); 
       }
     }
 
-    // 逐一彈出亮牌
-    for(let i=0; i<winners.length; i++) {
+    // 6. 逐一彈出得獎卡片亮牌
+    for(let i = 0; i < winners.length; i++) {
       const winner = winners[i];
-      // 寫入最終結果陣列 (用於匯出)
+      
+      // 寫入最終結果陣列，供後續匯出 CSV 使用
       state.result.push({ ...winner, order: i + 1 });
-      UI.drawProgress.textContent = `進度: ${i + 1} / ${count}`;
+      el('drawProgress').textContent = `進度: ${i + 1} / ${count}`;
 
+      // 若使用者點擊跳過，瞬間發牌
       if(state.skipAnimation) {
         appendWinnerCard(winner, i + 1);
-        continue; // 略過等待直接下一個
+        continue; 
       }
 
       if(!isTurbo && i < 3) {
-        // 前 3 名：名字跑動特效
-        for(let r=0; r<12; r++) {
-          UI.dispName.textContent = candidates[Math.floor(Math.random()*candidates.length)].name;
+        // 前 3 名：營造名字跑動的緊張特效
+        for(let r = 0; r < 12; r++) {
+          el('dispName').textContent = candidates[Math.floor(Math.random() * candidates.length)].name;
           await sleep(60);
         }
         
-        UI.dispName.textContent = winner.name; 
-        UI.dispName.classList.add('highlight');
+        el('dispName').textContent = winner.name; 
+        el('dispName').classList.add('highlight');
         sndPop();
         
         const card = appendWinnerCard(winner, i + 1);
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 完美畫面追蹤
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 鏡頭自動完美追蹤
         
         await sleep(1200); 
-        UI.dispName.classList.remove('highlight');
+        el('dispName').classList.remove('highlight');
       } else {
-        // 極速連抽
-        UI.dispName.textContent = winner.name;
+        // 第 4 名開始或開啟極速模式：連續快速彈出
+        el('dispName').textContent = winner.name;
         sndPop();
         
         const card = appendWinnerCard(winner, i + 1);
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 完美畫面追蹤
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 鏡頭自動完美追蹤
         
         await sleep(isTurbo ? 60 : 250);
       }
     }
   }
 
-  // 將得獎卡片加入 DOM
+  // 將得獎卡片加入 DOM (實作 XSS 安全防護)
   function appendWinnerCard(w, num) {
     const card = document.createElement('div');
     card.className = "card";
     
-    // 預防 XSS：建立文字節點而非直接使用 innerHTML 塞入未知字串
-    // (實務上這是極度嚴謹的做法)
+    // 預防 XSS 攻擊的字串跳脫處理
     const escapeHTML = str => {
       const div = document.createElement('div');
       div.innerText = str;
@@ -888,29 +894,29 @@
       <div class="c-id">${escapeHTML(w.id)}</div>
     `;
     
-    UI.winnersGrid.appendChild(card);
+    el('winnersGrid').appendChild(card);
     return card;
   }
 
 
   /* =========================================================================
-     [CSV 安全匯出]
-     確保匯出的 CSV 不會因為字串內有逗號而壞掉
+     [稽核報表安全匯出]
+     確保匯出的 CSV 不會因為名單內含有逗號而格式跑位
   ========================================================================= */
   
   function escapeCSV(val) {
     if (val == null) return '""';
     const str = String(val);
-    // 如果字串包含逗號、換行或雙引號，則用雙引號包起來，並將內部雙引號跳脫
     if (str.includes(',') || str.includes('"') || str.includes('\n')) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
   }
 
-  UI.btnExportResult.addEventListener('click', () => {
+  el('btnExportResult').addEventListener('click', () => {
     if(state.result.length === 0) return alert("目前沒有可匯出的抽籤結果。");
     
+    // 加上 BOM \uFEFF 避免 Excel 中文變成亂碼
     let csv = `\uFEFF--- 臺北市消防局體能抽測抽籤稽核證明 ---\n`;
     csv += `報告產出時間,${new Date().toLocaleString()}\n`;
     csv += `母體清冊 HASH (SHA-256),${state.fileHash}\n`;
@@ -919,12 +925,12 @@
     // CSV 標題列
     csv += `大隊,抽中序號,分隊,員編,姓名,職稱\n`;
     
-    // 寫入每一列資料
+    // 寫入每一列得獎資料
     state.result.forEach(r => {
       csv += `${escapeCSV(r.unit)},${r.order},${escapeCSV(r.branch)},${escapeCSV(r.id)},${escapeCSV(r.name)},${escapeCSV(r.title)}\n`;
     });
     
-    // 觸發下載
+    // 觸發瀏覽器下載
     const blob = new Blob([csv], {type: 'text/csv;charset=utf-8-sig'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -933,16 +939,21 @@
   });
 
   /* =========================================================================
-     [系統監聽與雜項]
+     [雜項] 保持畫布與視窗大小同步
   ========================================================================= */
-  
-  // 保持畫布與視窗大小同步
   window.addEventListener('resize', () => { 
     canvas.width = window.innerWidth; 
     canvas.height = window.innerHeight; 
   });
   canvas.width = window.innerWidth; 
   canvas.height = window.innerHeight;
+
+  // 為了確保萬無一失，在腳本最後主動呼叫一次初始化
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    loadDemoData();
+  } else {
+    document.addEventListener('DOMContentLoaded', loadDemoData);
+  }
 
 </script>
 </body>

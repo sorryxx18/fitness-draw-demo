@@ -543,14 +543,14 @@
       el('displayLabel').textContent = "即將抽出...";
       el('rollingName').style.color = "var(--text-light)";
       el('rollingName').textContent = "READY";
-      await sleep(1000);
+      await sleep(300);
 
       for(let i=0; i<picked.length; i++){
         const r = picked[i];
         el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
         
         // Rolling animation
-        let rollTime = 1000;
+        let rollTime = 300;
         let endTime = Date.now() + rollTime;
         
         return new Promise(resolveOuter => {
@@ -583,12 +583,12 @@
               setTimeout(async () => {
                 el('rollingName').style.color = "var(--text-light)";
                 if(i < picked.length - 1) {
-                  await sleep(500);
+                  await sleep(70);
                   resolveOuter();
                 } else {
                   resolveOuter();
                 }
-              }, 800);
+              }, 180);
             }
           }
           roll();
@@ -596,7 +596,7 @@
           // This loop continues for each picked person
         });
       }
-      await sleep(1500);
+      await sleep(300);
     }
 
     // Done
@@ -710,7 +710,7 @@
           roll();
         });
       }
-      await sleep(1500);
+      await sleep(300);
     }
 
     el('currentBrigade').textContent = "抽籤完畢";

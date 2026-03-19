@@ -6,19 +6,20 @@
   <title>TFD 體能抽測抽籤系統 - 舞台劇場版</title>
   <style>
     :root {
-      --bg-dark: #0a0a15;
-      --bg-panel: #1a1a2e;
-      --accent-red: #dc2626;
-      --accent-blue: #2563eb;
-      --accent-gold: #FFB300;
-      --text-light: #f8fafc;
-      --text-muted: #94a3b8;
+      /* 沉穩高質感的深黑灰底色 */
+      --bg-dark: #090a0f; 
+      --bg-panel: #14161c;
+      --accent-red: #e63946;  /* 現代科技感的深紅 */
+      --accent-blue: #457b9d; /* 輔助藍色 */
+      --accent-gold: #e9c46a; /* 內斂的香檳金 */
+      --text-light: #f8f9fa;
+      --text-muted: #8d99ae;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-      background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a15 100%);
+      background: radial-gradient(circle at 50% 0%, #1a1c23 0%, #090a0f 100%);
       color: var(--text-light);
       min-height: 100vh;
     }
@@ -30,7 +31,7 @@
       width: 520px;
       height: 520px;
       background: url("./assets/logo.jpg") center/cover no-repeat;
-      opacity: .07;
+      opacity: .04;
       filter: saturate(1.25) contrast(1.1);
       transform: rotate(-10deg);
       pointer-events: none;
@@ -53,12 +54,11 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
       margin-bottom: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
       border-radius: 14px;
-
     }
     .logo-zone { display: flex; align-items: center; gap: 12px; }
     .logo-badge{
@@ -66,9 +66,9 @@
       height: 56px;
       padding: 6px;
       border-radius: 16px;
-      background: linear-gradient(135deg, rgba(220,38,38,.35), rgba(37,99,235,.28));
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: 0 14px 35px rgba(0,0,0,.55), 0 0 18px rgba(220,38,38,.20), 0 0 18px rgba(37,99,235,.18);
+      background: linear-gradient(135deg, rgba(230,57,70,0.15), rgba(69,123,157,0.15));
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 14px 35px rgba(0,0,0,.4);
     }
     .logo-badge img{
       width: 100%;
@@ -77,8 +77,6 @@
       object-fit: cover;
       border: 1px solid rgba(0,0,0,.35);
     }
-
-    .logo { height: 48px; width: auto; }
     .stage-header h1 { 
       font-size: 18px; 
       font-weight: 700; 
@@ -111,21 +109,21 @@
       padding: 8px 24px;
       border: 1px solid var(--accent-gold);
       border-radius: 20px;
-      background: rgba(255,179,0,0.1);
+      background: rgba(233,196,106,0.1);
     }
     .big-display {
       width: 100%;
       max-width: 600px;
       aspect-ratio: 16/9;
-      background: linear-gradient(135deg, #1e1e3f 0%, #0f0f23 100%);
-      border: 2px solid rgba(220,38,38,0.3);
+      background: linear-gradient(135deg, #14161c 0%, #090a0f 100%);
+      border: 2px solid rgba(230,57,70,0.3);
       border-radius: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 16px;
-      box-shadow: 0 0 60px rgba(220,38,38,0.2), inset 0 0 60px rgba(0,0,0,0.5);
+      box-shadow: 0 0 40px rgba(230,57,70,0.15), inset 0 0 60px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
     }
@@ -134,7 +132,7 @@
       font-size: 72px;
       font-weight: 900;
       color: var(--text-light);
-      text-shadow: 0 0 20px rgba(220,38,38,0.5);
+      text-shadow: 0 0 20px rgba(230,57,70,0.4);
       font-family: var(--font-mono);
       min-height: 80px;
       display: flex;
@@ -189,8 +187,8 @@
       color: white;
     }
     .btn-primary:hover {
-      background: #b91c1c;
-      box-shadow: 0 0 20px rgba(220,38,38,0.4);
+      background: #c32d39;
+      box-shadow: 0 0 20px rgba(230,57,70,0.4);
     }
     .btn-secondary {
       background: rgba(255,255,255,0.1);
@@ -220,105 +218,84 @@
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 12px;
     }
-    .winner-card {
-      background: linear-gradient(135deg, rgba(220,38,38,0.1) 0%, rgba(26,26,46,0.8) 100%);
-      border: 1px solid rgba(220,38,38,0.3);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .winner-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(220,38,38,0.2);
-    }
-
 
     /* DEAL + FLIP CARDS */
-    .winner-card{
+    .winner-card {
       perspective: 1000px;
       transform-style: preserve-3d;
       position: relative;
       min-height: 132px;
     }
-    .winner-card .card-inner{
+    .winner-card .card-inner {
       position: relative;
       width: 100%;
       height: 100%;
       transform-style: preserve-3d;
-      transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+      transition: transform 300ms cubic-bezier(.2,.8,.2,1);
     }
-    .winner-card.face-down .card-inner{ transform: rotateY(180deg); }
+    .winner-card.face-down .card-inner { transform: rotateY(180deg); }
     .winner-card .card-front,
-    .winner-card .card-back{
+    .winner-card .card-back {
       position: absolute;
       inset: 0;
       backface-visibility: hidden;
       border-radius: 12px;
       overflow: hidden;
     }
-    .winner-card .card-back{
+    .winner-card .card-back {
       transform: rotateY(180deg);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: radial-gradient(circle at 30% 20%, rgba(37,99,235,0.25), transparent 60%),
-                  radial-gradient(circle at 70% 30%, rgba(220,38,38,0.22), transparent 55%),
-                  linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.35) 100%);
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* 乾淨的暗色磨砂玻璃質感 */
+      background: linear-gradient(135deg, #1d2029 0%, #11131a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
     }
-    .winner-card .card-front{
-      background: linear-gradient(135deg, rgba(220,38,38,0.10) 0%, rgba(26,26,46,0.8) 100%);
-      border: 1px solid rgba(220,38,38,0.3);
+    .winner-card .card-front {
+      background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(20,22,28,0.9) 100%);
+      border: 1px solid rgba(230,57,70,0.3);
       padding: 16px;
       box-sizing: border-box;
+      text-align: center;
     }
-    .card-back .back-mark{
+    .card-back .back-mark {
       font-family: var(--font-mono);
-      letter-spacing: 4px;
-      color: rgba(255,255,255,0.65);
+      letter-spacing: 6px;
+      color: rgba(255, 255, 255, 0.15);
+      font-size: 24px;
       font-weight: 900;
-      text-shadow: 0 0 18px rgba(37,99,235,0.35);
+      text-shadow: none;
     }
 
-    .winner-card.is-active{
-      outline: 2px solid rgba(255,179,0,0.65);
-      box-shadow: 0 0 26px rgba(255,179,0,0.22), 0 0 18px rgba(220,38,38,0.18);
-      transform: translateY(-2px) scale(1.02);
+    /* 動畫修復與光暈優化 */
+    @keyframes pulse3 {
+      0% { transform: scale(0.96); opacity: .55; }
+      100% { transform: scale(1.0); opacity: 1; }
     }
-    @keyframes pulse3{
-      0%{ transform: scale(0.96); opacity: .55; }
+    @keyframes sweepGlow {
+      0% { background-position: -200% 0; opacity: .0; }
+      40% { opacity: .9; }
+      100% { background-position: 200% 0; opacity: .0; }
+    }
 
-    @keyframes sweepGlow{
-      0%{ background-position: -200% 0; opacity: .0; }
-      40%{ opacity: .9; }
-      100%{ background-position: 200% 0; opacity: .0; }
+    .winner-card.is-active {
+      outline: 1px solid var(--accent-gold);
+      box-shadow: 0 0 24px rgba(233, 196, 106, 0.15), 
+                  0 8px 16px rgba(0,0,0,0.6);
+      transform: translateY(-4px) scale(1.02);
+      z-index: 10;
     }
-    .winner-card.is-active{
-      outline: 2px solid rgba(255,179,0,0.85);
-      box-shadow:
-        0 0 32px rgba(255,179,0,0.28),
-        0 0 22px rgba(220,38,38,0.25),
-        0 0 22px rgba(37,99,235,0.22);
-      transform: translateY(-3px) scale(1.03);
-    }
-    .winner-card.is-active::after{
-      content:"";
-      position:absolute;
-      inset:-2px;
+    .winner-card.is-active::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
       border-radius: 14px;
-      background: linear-gradient(90deg,
-        transparent,
-        rgba(255,255,255,0.30),
-        transparent
-      );
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
       background-size: 200% 100%;
-      animation: sweepGlow 520ms ease-out;
-      pointer-events:none;
+      animation: sweepGlow 600ms ease-out;
+      pointer-events: none;
       mix-blend-mode: screen;
-    }
-      100%{ transform: scale(1.0); opacity: 1; }
     }
     .winner-brigade {
       font-size: 11px;
@@ -373,11 +350,11 @@
 </head>
 <body>
   <div class="stage-container">
-    <!-- 頂部：極簡資訊區 -->
     <header class="stage-header">
       <div class="logo-zone">
         <div class="logo-badge">
-          <img src="./assets/logo.jpg" alt="TFD Logo" />
+          <!-- 若無logo圖檔不影響運作，會顯示漸層底色 -->
+          <img src="./assets/logo.jpg" alt="TFD Logo" onerror="this.style.display='none'" />
         </div>
         <h1>TFD 體能抽測抽籤系統</h1>
       </div>
@@ -386,7 +363,6 @@
       </div>
     </header>
 
-    <!-- 中央：巨型抽籤螢幕 -->
     <main class="lotto-screen">
       <div class="brigade-badge" id="currentBrigade">準備就緒</div>
       <div class="big-display" id="bigDisplay">
@@ -395,7 +371,6 @@
         <div class="display-hint">點擊「開始抽籤」開始</div>
       </div>
 
-      <!-- 控制區 -->
       <div class="control-panel">
         <div class="input-group">
           <label>每隊抽</label>
@@ -411,7 +386,6 @@
       </div>
     </main>
 
-    <!-- 底部：得獎者展示牆 -->
     <section class="winners-section">
       <h2 class="section-title">抽中名單</h2>
       <div class="winners-grid" id="winnersGrid"></div>
@@ -440,15 +414,13 @@
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
   }
-  function playTick() { /* disabled in flip mode */ }
-  function playFlip(){
-    // gacha flip: soft whoosh + click
+
+  // 音效種類
+  function playFlip() {
     playTone(360, 'triangle', 0.04, 0.05);
     setTimeout(()=>playTone(180, 'sine', 0.06, 0.04), 30);
   }
-
   function playLock() {
-    // lock: low thump + sparkle
     playTone(110, 'sine', 0.08, 0.08);
     setTimeout(()=>playTone(880, 'triangle', 0.06, 0.05), 40);
     setTimeout(()=>playTone(1320, 'triangle', 0.08, 0.04), 80);
@@ -457,6 +429,12 @@
     playTone(523.25, 'triangle', 0.2, 0.1);
     setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150);
     setTimeout(()=>playTone(783.99, 'triangle', 0.4, 0.1), 300);
+  }
+  function playBeepShort() {
+    playTone(440, 'sine', 0.1, 0.1); // 短促倒數聲
+  }
+  function playBeepLong() {
+    playTone(880, 'sine', 0.4, 0.15); // 開始高音
   }
 
   // ---------- Confetti ----------
@@ -467,7 +445,7 @@
   let particles = [];
 
   function fireConfetti() {
-    const colors = ['#dc2626', '#2563eb', '#FFB300', '#10b981', '#ffffff'];
+    const colors =['#e63946', '#457b9d', '#e9c46a', '#10b981', '#ffffff'];
     for(let i=0; i<150; i++) {
       particles.push({
         x: canvas.width / 2, y: canvas.height / 2,
@@ -500,7 +478,7 @@
       ctx.stroke();
     }
     if(active) requestAnimationFrame(renderConfetti);
-    else particles = [];
+    else particles =[];
   }
 
   // ---------- RNG ----------
@@ -538,15 +516,15 @@
   }
 
   // ---------- Data ----------
-  const lastNames = ["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","廖","賴","徐","周"];
-  const firstNames = ["冠廷","承翰","子軒","柏宇","俊傑","家豪","宇辰","廷祐","哲維","昱翔","孟軒","建宏","彥廷",
+  const lastNames =["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","廖","賴","徐","周"];
+  const firstNames =["冠廷","承翰","子軒","柏宇","俊傑","家豪","宇辰","廷祐","哲維","昱翔","孟軒","建宏","彥廷",
                      "怡君","思妤","雅婷","佳穎","郁庭","語涵","品妍","鈺婷","婉如","子晴","佳蓉"];
-  const titles = ["隊員","小隊長","分隊長","隊員","隊員","隊員","教官"];
+  const titles =["隊員","小隊長","分隊長","隊員","隊員","隊員","教官"];
   const unitMap = {
-    '1': ["泉州分隊","建國分隊","城中分隊","雙園分隊","龍山分隊","螢橋分隊","木柵分隊","景美分隊","寶橋分隊","興隆分隊"],
-    '2': ["信義分隊","南港分隊","大安分隊","莊敬分隊","安和分隊","復興分隊","舊莊分隊","金華分隊"],
-    '3': ["圓山分隊","中山分隊","松江分隊","大直分隊","松山分隊","中崙分隊","八德分隊","民權分隊"],
-    '4': ["劍潭分隊","大同分隊","後港分隊","社子分隊","天母分隊","福安分隊","士林分隊","石牌分隊","光明分隊","秀山分隊"]
+    '1':["泉州分隊","建國分隊","城中分隊","雙園分隊","龍山分隊","螢橋分隊","木柵分隊","景美分隊","寶橋分隊","興隆分隊"],
+    '2':["信義分隊","南港分隊","大安分隊","莊敬分隊","安和分隊","復興分隊","舊莊分隊","金華分隊"],
+    '3':["圓山分隊","中山分隊","松江分隊","大直分隊","松山分隊","中崙分隊","八德分隊","民權分隊"],
+    '4':["劍潭分隊","大同分隊","後港分隊","社子分隊","天母分隊","福安分隊","士林分隊","石牌分隊","光明分隊","秀山分隊"]
   };
   const brigadeNames = { '1':'第一大隊', '2':'第二大隊', '3':'第三大隊', '4':'第四大隊' };
 
@@ -571,7 +549,7 @@
   }
 
   function toCSV(rows){
-    const header = ['大隊','分隊','員編','姓名','職稱'];
+    const header =['大隊','分隊','員編','姓名','職稱'];
     const lines=[header.join(',')];
     for(const r of rows){
       lines.push([r.brigade,r.unit,r.empId,r.name,r.title].map(x => '"'+String(x).replaceAll('"','""')+'"').join(','));
@@ -587,7 +565,7 @@
   }
 
   // ---------- State ----------
-  const state = { rosterRows: [], rosterCSV: '', resultRows: [], resultCSV: '', drawSeed: '' };
+  const state = { rosterRows: [], rosterCSV: '', resultRows:[], resultCSV: '', drawSeed: '' };
   function el(id){ return document.getElementById(id); }
 
   function setFairPanel(){
@@ -642,27 +620,30 @@
       // Camera focus: draw stage (big screen)
       el('bigDisplay').scrollIntoView({ behavior: 'smooth', block: 'center' });
       await sleep(180);
+      
       el('displayLabel').textContent = "即將抽出...";
       el('rollingName').style.color = "var(--text-light)";
       el('rollingName').textContent = "準備";
       await sleep(120);
-      // COUNTDOWN_321
+
+      // 倒數計時與專屬音效
       const cd = ['3','2','1'];
       for(const v of cd){
         el('displayLabel').textContent = '抽籤開始';
         el('rollingName').textContent = v;
         el('rollingName').style.color = 'var(--accent-gold)';
         el('rollingName').style.animation = 'pulse3 200ms ease-out';
-        playFlip();
-        await sleep(320);
+        playBeepShort();
+        await sleep(600); // 加長倒數間隔，建立緊張感
         el('rollingName').style.animation = '';
       }
       el('rollingName').style.color = 'var(--text-light)';
-      el('rollingName').textContent = "READY";
-      await sleep(120);
+      el('rollingName').textContent = "GO!";
+      playBeepLong();
+      await sleep(400);
 
       // Deal: pre-render all face-down cards first (instant)
-      const cards = [];
+      const cards =[];
       for(let i=0; i<picked.length; i++){
         const r = picked[i];
         const card = document.createElement('div');
@@ -685,15 +666,17 @@
         cards.push(card);
       }
 
-      
-
-      // One-time camera move: jump to winners wall before flipping
-      el('winnersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
       await sleep(220);
-// Flip: reveal one by one with focus + sound
+
+      // Flip: reveal one by one with focus + sound + camera tracking
       for(let i=0; i<picked.length; i++){
         const r = picked[i];
         el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
+        const card = cards[i];
+
+        // 畫面動態追蹤：將接下來要翻的卡片平滑滾動到畫面中央
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await sleep(300); // 讓鏡頭有時間移動定位
 
         // micro-roll on big screen
         let rollTime = 120;
@@ -712,32 +695,38 @@
           roll();
         });
 
-        // focus this card and flip
-        const card = cards[i];
-        // highlight focus (no per-card scrolling)
-        if(i>0) cards[i-1].classList.remove('is-active');
+        // 移除上一張卡片的高光，加上當前卡片高光
+        if(i > 0) cards[i-1].classList.remove('is-active');
         card.classList.add('is-active');
+        
+        // 翻牌
         playFlip();
         card.classList.remove('face-down');
         setTimeout(()=>playLock(), 60);
 
         resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
 
-        await sleep(120);
+        await sleep(150);
         if((i+1) % 5 === 0) await sleep(220);
         el('rollingName').style.color = "var(--text-light)";
+      }
+      
+      // 最後一張卡片翻完後，移除它的 active 狀態
+      if(cards.length > 0) {
+        setTimeout(() => cards[cards.length - 1].classList.remove('is-active'), 1000);
       }
       await sleep(200);
     }
 
     // Done
+    el('bigDisplay').scrollIntoView({ behavior: 'smooth', block: 'center' });
     el('currentBrigade').textContent = "抽籤完畢";
     el('displayLabel').textContent = "MISSION ACCOMPLISHED";
     el('rollingName').textContent = "DONE";
     el('rollingName').style.color = "var(--accent-gold)";
     
     state.resultRows = resultRows;
-    state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
+    state.resultCSV = '\uFEFF' + toResultCSV(resultRows); // 支援中文的 CSV 格式
 
     fireConfetti();
     playSuccess();
@@ -775,6 +764,10 @@
     try{
       await runDraw();
       el('btnDraw').textContent = '重新抽籤';
+    }catch(e){
+      console.error(e);
+      alert("發生錯誤：" + e.message);
+      el('btnDraw').textContent = '開始抽籤';
     }finally{
       el('btnDraw').disabled = false;
     }

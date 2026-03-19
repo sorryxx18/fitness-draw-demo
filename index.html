@@ -1,704 +1,264 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TFD 體能抽測抽籤系統 - 舞台劇場版</title>
-  <style>
-    :root {
-      --bg-dark: #0a0a15;
-      --bg-panel: #1a1a2e;
-      --accent-red: #dc2626;
-      --accent-blue: #2563eb;
-      --accent-gold: #FFB300;
-      --text-light: #f8fafc;
-      --text-muted: #94a3b8;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-      background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a15 100%);
-      color: var(--text-light);
-      min-height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFD 體能抽測抽籤系統</title>
     
-    /* STAGE LAYOUT */
-    .stage-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    
-    /* HEADER */
-    .stage-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      margin-bottom: 16px;
-    }
-    .logo-zone { display: flex; align-items: center; gap: 12px; }
-    .logo { height: 48px; width: auto; }
-    .stage-header h1 { 
-      font-size: 18px; 
-      font-weight: 700; 
-      color: var(--text-light); 
-      letter-spacing: 2px; 
-    }
-    .audit-bar { 
-      font-family: var(--font-mono); 
-      font-size: 12px; 
-      color: var(--text-muted); 
-    }
-    .audit-bar span { color: var(--accent-red); margin: 0 4px; }
-    
-    /* MAIN LOTTO SCREEN */
-    .lotto-screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      min-height: 50vh;
-    }
-    .brigade-badge {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--accent-gold);
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      padding: 8px 24px;
-      border: 1px solid var(--accent-gold);
-      border-radius: 20px;
-      background: rgba(255,179,0,0.1);
-    }
-    .big-display {
-      width: 100%;
-      max-width: 600px;
-      aspect-ratio: 16/9;
-      background: linear-gradient(135deg, #1e1e3f 0%, #0f0f23 100%);
-      border: 2px solid rgba(220,38,38,0.3);
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      box-shadow: 0 0 60px rgba(220,38,38,0.2), inset 0 0 60px rgba(0,0,0,0.5);
-      position: relative;
-      overflow: hidden;
-    }
-    .display-label { font-size: 14px; color: var(--text-muted); letter-spacing: 2px; }
-    .rolling-name {
-      font-size: 72px;
-      font-weight: 900;
-      color: var(--text-light);
-      text-shadow: 0 0 20px rgba(220,38,38,0.5);
-      font-family: var(--font-mono);
-      min-height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .display-hint { font-size: 12px; color: var(--text-muted); }
-    
-    /* CONTROL PANEL */
-    .control-panel {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 16px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-    }
-    .input-group { display: flex; flex-direction: column; gap: 4px; }
-    .input-group label { 
-      font-size: 11px; 
-      color: var(--text-muted); 
-      text-transform: uppercase; 
-      letter-spacing: 1px; 
-    }
-    input[type="text"], input[type="number"] {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text-light);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      width: 120px;
-      outline: none;
-    }
-    input[type="text"]:focus, input[type="number"]:focus {
-      border-color: var(--accent-red);
-    }
-    button {
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      background: var(--accent-red);
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #b91c1c;
-      box-shadow: 0 0 20px rgba(220,38,38,0.4);
-    }
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: var(--text-light);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    
-    /* WINNERS WALL */
-    .winners-section {
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    .section-title {
-      text-align: center;
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    .winners-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-    }
-    .winner-card {
-      background: linear-gradient(135deg, rgba(220,38,38,0.1) 0%, rgba(26,26,46,0.8) 100%);
-      border: 1px solid rgba(220,38,38,0.3);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .winner-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(220,38,38,0.2);
-    }
-    .winner-brigade {
-      font-size: 11px;
-      color: var(--accent-gold);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-    .winner-no {
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--accent-red);
-      font-family: var(--font-mono);
-    }
-    .winner-name {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-light);
-      margin: 8px 0;
-    }
-    .winner-unit {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .winner-id {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      opacity: 0.7;
-      margin-top: 4px;
-    }
-    
-    /* CONFETTI */
-    #confetti-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 9999;
-    }
-    
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .rolling-name { font-size: 48px; }
-      .big-display { max-width: 100%; }
-      .control-panel { flex-direction: column; align-items: stretch; }
-      .winners-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-  </style>
-</head>
-<body>
-  <div class="stage-container">
-    <!-- 頂部：極簡資訊區 -->
-    <header class="stage-header">
-      <div class="logo-zone">
-        <img src="./assets/logo.jpg" alt="TFD Logo" class="logo" />
-        <h1>TFD 體能抽測抽籤系統</h1>
-      </div>
-      <div class="audit-bar">
-        Seed: <span id="kvSeed">-</span> | Time: <span id="kvTime">-</span> | SHA: <span id="kvHash">-</span>
-      </div>
-    </header>
-
-    <!-- 中央：巨型抽籤螢幕 -->
-    <main class="lotto-screen">
-      <div class="brigade-badge" id="currentBrigade">準備就緒</div>
-      <div class="big-display" id="bigDisplay">
-        <div class="display-label" id="displayLabel">即將抽出...</div>
-        <div class="rolling-name" id="rollingName">???</div>
-        <div class="display-hint">點擊「開始抽籤」開始</div>
-      </div>
-
-      <!-- 控制區 -->
-      <div class="control-panel">
-        <div class="input-group">
-          <label>每隊抽</label>
-          <input type="number" id="pickCount" value="20" min="1" />
-        </div>
-        <div class="input-group">
-          <label>Seed</label>
-          <input type="text" id="seed" placeholder="留空自動生成" />
-        </div>
-        <button id="btnGen" class="btn-secondary">載入範例</button>
-        <button id="btnDraw" class="btn-primary">開始抽籤</button>
-        <button id="btnResult" class="btn-secondary">下載 CSV</button>
-      </div>
-    </main>
-
-    <!-- 底部：得獎者展示牆 -->
-    <section class="winners-section">
-      <h2 class="section-title">抽中名單</h2>
-      <div class="winners-grid" id="winnersGrid"></div>
-    </section>
-  </div>
-
-  <canvas id="confetti-canvas"></canvas>
-
-<script>
-  // ---------- Sound Effects ----------
-  let audioCtx = null;
-  function initAudio() {
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  }
-  function playTone(freq, type, duration, vol=0.1) {
-    if(!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  }
-  function playTick() { playTone(1200, 'square', 0.05, 0.02); }
-  function playLock() { playTone(800, 'square', 0.1, 0.05); setTimeout(()=>playTone(1200, 'square', 0.15, 0.05), 80); }
-  function playSuccess() {
-    playTone(523.25, 'triangle', 0.2, 0.1);
-    setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150);
-    setTimeout(()=>playTone(783.99, 'triangle', 0.4, 0.1), 300);
-  }
-
-  // ---------- Confetti ----------
-  const canvas = document.getElementById('confetti-canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  let particles = [];
-
-  function fireConfetti() {
-    const colors = ['#dc2626', '#2563eb', '#FFB300', '#10b981', '#ffffff'];
-    for(let i=0; i<150; i++) {
-      particles.push({
-        x: canvas.width / 2, y: canvas.height / 2,
-        vx: (Math.random() - 0.5) * 25, vy: (Math.random() - 1) * 25 - 5,
-        size: Math.random() * 10 + 5, color: colors[Math.floor(Math.random() * colors.length)],
-        tilt: Math.floor(Math.random() * 10) - 10, tiltAngle: 0, tiltAngleInc: (Math.random() * 0.07) + 0.05
-      });
-    }
-    requestAnimationFrame(renderConfetti);
-  }
-
-  function renderConfetti() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let active = false;
-    for(let i=0; i<particles.length; i++) {
-      const p = particles[i];
-      p.tiltAngle += p.tiltAngleInc;
-      p.y += (Math.cos(p.tiltAngle) + 1 + p.size / 2) / 2;
-      p.x += Math.sin(p.tiltAngle) * 2 + p.vx;
-      p.vy += 0.5;
-      p.y += p.vy;
-
-      if(p.y <= canvas.height) active = true;
-
-      ctx.beginPath();
-      ctx.lineWidth = p.size;
-      ctx.strokeStyle = p.color;
-      ctx.moveTo(p.x + p.tilt + p.size, p.y);
-      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.size);
-      ctx.stroke();
-    }
-    if(active) requestAnimationFrame(renderConfetti);
-    else particles = [];
-  }
-
-  // ---------- RNG ----------
-  function xmur3(str) {
-    let h = 1779033703 ^ str.length;
-    for (let i=0; i<str.length; i++) {
-      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-      h = (h << 13) | (h >>> 19);
-    }
-    return function() {
-      h = Math.imul(h ^ (h >>> 16), 2246822507);
-      h = Math.imul(h ^ (h >>> 13), 3266489909);
-      return (h ^= (h >>> 16)) >>> 0;
-    }
-  }
-  function sfc32(a, b, c, d) {
-    return function() {
-      a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
-      let t = (a + b) | 0;
-      a = b ^ (b >>> 9);
-      b = (c + (c << 3)) | 0;
-      c = (c << 21) | (c >>> 11);
-      d = (d + 1) | 0;
-      t = (t + d) | 0;
-      c = (c + t) | 0;
-      return (t >>> 0) / 4294967296;
-    }
-  }
-  function makeRng(seedText) {
-    const seed = seedText && seedText.trim()
-      ? seedText.trim()
-      : (new Date().toISOString().slice(0,19).replace('T','_') + '_' + Math.random().toString(16).slice(2,6).toUpperCase());
-    const gen = xmur3(seed);
-    return { seed, rng: sfc32(gen(), gen(), gen(), gen()) };
-  }
-
-  // ---------- Data ----------
-  const lastNames = ["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","廖","賴","徐","周"];
-  const firstNames = ["冠廷","承翰","子軒","柏宇","俊傑","家豪","宇辰","廷祐","哲維","昱翔","孟軒","建宏","彥廷",
-                     "怡君","思妤","雅婷","佳穎","郁庭","語涵","品妍","鈺婷","婉如","子晴","佳蓉"];
-  const titles = ["隊員","小隊長","分隊長","隊員","隊員","隊員","教官"];
-  const unitMap = {
-    '1': ["泉州分隊","建國分隊","城中分隊","雙園分隊","龍山分隊","螢橋分隊","木柵分隊","景美分隊","寶橋分隊","興隆分隊"],
-    '2': ["信義分隊","南港分隊","大安分隊","莊敬分隊","安和分隊","復興分隊","舊莊分隊","金華分隊"],
-    '3': ["圓山分隊","中山分隊","松江分隊","大直分隊","松山分隊","中崙分隊","八德分隊","民權分隊"],
-    '4': ["劍潭分隊","大同分隊","後港分隊","社子分隊","天母分隊","福安分隊","士林分隊","石牌分隊","光明分隊","秀山分隊"]
-  };
-  const brigadeNames = { '1':'第一大隊', '2':'第二大隊', '3':'第三大隊', '4':'第四大隊' };
-
-  function pad(n, w){ return String(n).padStart(w,'0'); }
-  function randPick(arr, rng){ return arr[Math.floor(rng()*arr.length)]; }
-
-  function genRoster(perBrigade=50, seedText=''){
-    const {seed, rng} = makeRng(seedText || ('GEN_' + Date.now()));
-    const rows=[];
-    for(let b=1;b<=4;b++){
-      const used=new Set();
-      const units = unitMap[String(b)];
-      for(let i=0;i<perBrigade;i++){
-        let empId;
-        do{ empId = String(b) + pad(Math.floor(rng()*10000),4); } while(used.has(empId));
-        used.add(empId);
-        const name = randPick(lastNames,rng) + randPick(firstNames,rng);
-        rows.push({ brigade: String(b), unit: randPick(units,rng), empId, name, title: randPick(titles,rng) });
-      }
-    }
-    return { seed, rows };
-  }
-
-  function toCSV(rows){
-    const header = ['大隊','分隊','員編','姓名','職稱'];
-    const lines=[header.join(',')];
-    for(const r of rows){
-      lines.push([r.brigade,r.unit,r.empId,r.name,r.title].map(x => '"'+String(x).replaceAll('"','""')+'"').join(','));
-    }
-    return lines.join('\n');
-  }
-
-  async function sha256(text){
-    const enc = new TextEncoder();
-    const buf = await crypto.subtle.digest('SHA-256', enc.encode(text));
-    const arr = Array.from(new Uint8Array(buf));
-    return arr.map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16).toUpperCase();
-  }
-
-  // ---------- State ----------
-  const state = { rosterRows: [], rosterCSV: '', resultRows: [], resultCSV: '', drawSeed: '' };
-  function el(id){ return document.getElementById(id); }
-
-  function setFairPanel(){
-    el('kvTime').textContent = new Date().toLocaleString('zh-TW');
-    el('kvSeed').textContent = state.drawSeed || '-';
-    el('kvHash').textContent = state.rosterCSV ? (state.rosterHash || '-') : '-';
-  }
-
-  // ---------- Draw Logic ----------
-  function groupRows(){
-    const g={};
-    for(let b=1;b<=4;b++) g[String(b)]=[];
-    for(const r of state.rosterRows){ if(g[r.brigade]) g[r.brigade].push(r); }
-    return g;
-  }
-
-  function pickN(rows, n, rng){
-    if(n>rows.length) throw new Error(`名單不足`);
-    const arr = rows.slice();
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(rng()* (i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr.slice(0,n);
-  }
-
-  const sleep = ms => new Promise(res=>setTimeout(res, ms));
-
-  async function runDraw(){
-    const n = parseInt(el('pickCount').value,10);
-    const { seed, rng } = makeRng(el('seed').value);
-    state.drawSeed = seed;
-
-    const groups = groupRows();
-    for(let b=1;b<=4;b++){
-      if(groups[String(b)].length < n){
-        alert(`${brigadeNames[String(b)]} 母體人數 (${groups[String(b)].length}) 不足 ${n} 人，無法抽籤。`);
-        return;
-      }
-    }
-
-    setFairPanel();
-    const resultRows=[];
-    el('winnersGrid').innerHTML = '';
-
-    for(let b=1;b<=4;b++){
-      const key = String(b);
-      const list = groups[key];
-      const picked = pickN(list, n, rng);
-      
-      el('currentBrigade').textContent = `現在抽取：${brigadeNames[key]}`;
-      el('displayLabel').textContent = "即將抽出...";
-      el('rollingName').style.color = "var(--text-light)";
-      el('rollingName').textContent = "READY";
-      await sleep(1000);
-
-      for(let i=0; i<picked.length; i++){
-        const r = picked[i];
-        el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
-        
-        // Rolling animation
-        let rollTime = 1000;
-        let endTime = Date.now() + rollTime;
-        
-        return new Promise(resolveOuter => {
-          function roll() {
-            if(Date.now() < endTime) {
-              el('rollingName').textContent = randPick(list, Math.random).name;
-              playTick();
-              requestAnimationFrame(roll);
-            } else {
-              // Final picked
-              el('rollingName').textContent = r.name;
-              el('rollingName').style.color = "var(--accent-red)";
-              playLock();
-              
-              // Add to grid
-              const card = document.createElement('div');
-              card.className = 'winner-card';
-              card.innerHTML = `
-                <div class="winner-brigade">${brigadeNames[key]}</div>
-                <div class="winner-no">#${String(i+1).padStart(2,'0')}</div>
-                <div class="winner-name">${r.name}</div>
-                <div class="winner-unit">${r.unit} ${r.title}</div>
-                <div class="winner-id">${r.empId}</div>
-              `;
-              el('winnersGrid').appendChild(card);
-              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              
-              resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
-              
-              setTimeout(async () => {
-                el('rollingName').style.color = "var(--text-light)";
-                if(i < picked.length - 1) {
-                  await sleep(500);
-                  resolveOuter();
-                } else {
-                  resolveOuter();
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(214.3 31.8% 91.4%)",
+                        input: "hsl(214.3 31.8% 91.4%)",
+                        ring: "hsl(222.2 84% 4.9%)",
+                        background: "hsl(0 0% 100%)",
+                        foreground: "hsl(222.2 84% 4.9%)",
+                        primary: {
+                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(215.4 16.3% 46.9%)",
+                        }
+                    }
                 }
-              }, 800);
             }
-          }
-          roll();
-        }).then(() => {
-          // This loop continues for each picked person
-        });
-      }
-      await sleep(1500);
-    }
+        }
+    </script>
 
-    // Done
-    el('currentBrigade').textContent = "抽籤完畢";
-    el('displayLabel').textContent = "MISSION ACCOMPLISHED";
-    el('rollingName').textContent = "DONE";
-    el('rollingName').style.color = "var(--accent-gold)";
-    
-    state.resultRows = resultRows;
-    state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
+    <!-- 載入 React, ReactDOM 與 Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-foreground min-h-screen flex flex-col font-sans">
+    <div id="root" class="flex-grow flex flex-col"></div>
 
-    fireConfetti();
-    playSuccess();
-  }
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-  function toResultCSV(rows){
-    const header=['大隊','序號','分隊','員編','姓名','職稱'];
-    const lines=[header.join(',')];
-    for(const r of rows){
-      const bn = brigadeNames[r.brigade] || r.brigade;
-      lines.push([bn, r.no, r.unit, r.empId, r.name, r.title].map(x => '"'+String(x).replaceAll('"','""')+'"').join(','));
-    }
-    return lines.join('\n');
-  }
+        // --- SVG 圖示組件 ---
+        const IconUsers = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+        const IconHistory = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
 
-  // ---------- Events ----------
-  el('btnGen').addEventListener('click', async () => {
-    const demo = genRoster(100);
-    state.rosterRows = demo.rows;
-    state.rosterCSV = toCSV(demo.rows);
-    state.rosterHash = await sha256(state.rosterCSV);
-    state.drawSeed = ''; el('seed').value = '';
-    setFairPanel();
+        function App() {
+            // --- 狀態管理 ---
+            const[activeTab, setActiveTab] = useState('draw');
+            const [roster, setRoster] = useState("第一大隊-張三\n第一大隊-李四\n第二大隊-王五\n第二大隊-趙六\n第三大隊-陳七\n第三大隊-林八\n第四大隊-黃九\n第四大隊-吳十");
+            const[drawCount, setDrawCount] = useState(2);
+            const [isDrawing, setIsDrawing] = useState(false);
+            const[tempName, setTempName] = useState("");
+            const [currentResult, setCurrentResult] = useState(null);
+            const [history, setHistory] = useState([]);
 
-    el('btnGen').textContent = "重新生成完畢 ✓";
-    setTimeout(() => el('btnGen').textContent = "載入範例", 1500);
-  });
+            // 解析有效名單
+            const getValidList = () => roster.split('\n').map(s => s.trim()).filter(Boolean);
 
-  el('btnDraw').addEventListener('click', async () => {
-    initAudio();
-    if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例。'); return; }
-    el('btnDraw').disabled = true;
-    el('btnDraw').textContent = "抽籤進行中...";
-    
-    // Fix async loop for runDraw
-    const n = parseInt(el('pickCount').value,10);
-    const { seed, rng } = makeRng(el('seed').value);
-    state.drawSeed = seed;
-    const groups = groupRows();
-    for(let b=1;b<=4;b++){
-      if(groups[String(b)].length < n){
-        alert(`${brigadeNames[String(b)]} 母體人數不足`);
-        el('btnDraw').disabled = false;
-        el('btnDraw').textContent = "開始抽籤";
-        return;
-      }
-    }
-    
-    setFairPanel();
-    const resultRows=[];
-    el('winnersGrid').innerHTML = '';
+            // --- 抽籤邏輯 ---
+            const handleDraw = () => {
+                const list = getValidList();
+                if (list.length === 0) return alert("請先至「名單管理」輸入名單！");
+                if (drawCount < 1) return alert("抽籤人數必須大於 0！");
+                if (drawCount > list.length) return alert(`名單只有 ${list.length} 人，無法抽出 ${drawCount} 人！`);
 
-    for(let b=1;b<=4;b++){
-      const key = String(b);
-      const list = groups[key];
-      const picked = pickN(list, n, rng);
-      
-      el('currentBrigade').textContent = `現在抽取：${brigadeNames[key]}`;
-      el('displayLabel').textContent = "即將抽出...";
-      el('rollingName').style.color = "var(--text-light)";
-      el('rollingName').textContent = "READY";
-      await sleep(1000);
+                setIsDrawing(true);
+                setCurrentResult(null);
 
-      for(let i=0; i<picked.length; i++){
-        const r = picked[i];
-        el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
-        
-        await new Promise(resolve => {
-          let rollTime = 1000;
-          let endTime = Date.now() + rollTime;
-          function roll() {
-            if(Date.now() < endTime) {
-              el('rollingName').textContent = randPick(list, Math.random).name;
-              playTick();
-              requestAnimationFrame(roll);
-            } else {
-              el('rollingName').textContent = r.name;
-              el('rollingName').style.color = "var(--accent-red)";
-              playLock();
-              
-              const card = document.createElement('div');
-              card.className = 'winner-card';
-              card.innerHTML = `
-                <div class="winner-brigade">${brigadeNames[key]}</div>
-                <div class="winner-no">#${String(i+1).padStart(2,'0')}</div>
-                <div class="winner-name">${r.name}</div>
-                <div class="winner-unit">${r.unit} ${r.title}</div>
-                <div class="winner-id">${r.empId}</div>
-              `;
-              el('winnersGrid').appendChild(card);
-              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              
-              resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
-              
-              setTimeout(() => {
-                el('rollingName').style.color = "var(--text-light)";
-                resolve();
-              }, 800);
-            }
-          }
-          roll();
-        });
-      }
-      await sleep(1500);
-    }
+                // 動畫效果：快速跳動名字
+                let counter = 0;
+                const interval = setInterval(() => {
+                    setTempName(list[Math.floor(Math.random() * list.length)]);
+                    counter++;
+                    
+                    // 動畫結束，產出最終結果
+                    if (counter > 20) {
+                        clearInterval(interval);
+                        
+                        // 使用 Fisher-Yates 洗牌演算法確保不重複
+                        let shuffled = [...list];
+                        for (let i = shuffled.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                        }
+                        
+                        const selected = shuffled.slice(0, drawCount);
+                        setCurrentResult(selected);
+                        setTempName("");
+                        setIsDrawing(false);
+                        
+                        // 寫入歷史紀錄
+                        setHistory(prev =>[{
+                            id: Date.now(),
+                            time: new Date().toLocaleTimeString('zh-TW', { hour12: false }),
+                            results: selected
+                        }, ...prev]);
+                    }
+                }, 50); // 每 50ms 跳動一次
+            };
 
-    el('currentBrigade').textContent = "抽籤完畢";
-    el('displayLabel').textContent = "MISSION ACCOMPLISHED";
-    el('rollingName').textContent = "DONE";
-    el('rollingName').style.color = "var(--accent-gold)";
-    
-    state.resultRows = resultRows;
-    state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
+            // --- 渲染區塊 ---
+            return (
+                <div className="max-w-3xl w-full mx-auto p-4 md:p-8 flex-grow flex flex-col">
+                    {/* Header */}
+                    <div className="text-center mb-8 pt-8">
+                        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-primary mb-2">
+                            TFD 體能抽測系統
+                        </h1>
+                        <p className="text-muted-foreground text-sm md:text-base">公平、公開、隨機的數位抽籤平台</p>
+                    </div>
 
-    fireConfetti();
-    playSuccess();
-    
-    el('btnDraw').textContent = "重新抽籤";
-    el('btnDraw').disabled = false;
-  });
+                    {/* Tabs */}
+                    <div className="flex bg-muted p-1 rounded-lg mb-6 shadow-sm">
+                        <button 
+                            onClick={() => setActiveTab('draw')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-md transition-all ${activeTab === 'draw' ? 'bg-white text-primary shadow' : 'text-muted-foreground hover:text-primary'}`}
+                        >
+                            <IconPlay /> 抽籤作業
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('roster')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-md transition-all ${activeTab === 'roster' ? 'bg-white text-primary shadow' : 'text-muted-foreground hover:text-primary'}`}
+                        >
+                            <IconUsers /> 名單管理
+                            <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full ml-1">{getValidList().length}</span>
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('history')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-md transition-all ${activeTab === 'history' ? 'bg-white text-primary shadow' : 'text-muted-foreground hover:text-primary'}`}
+                        >
+                            <IconHistory /> 歷史紀錄
+                        </button>
+                    </div>
 
-  el('btnResult').addEventListener('click', () => {
-    if(!state.resultCSV){ alert('請先執行抽籤作業。'); return; }
-    const blob = new Blob([state.resultCSV], {type: 'text/csv;charset=utf-8-sig'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `TFD_DrawResult_${state.drawSeed}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  });
-</script>
+                    {/* 內容區域：名單管理 */}
+                    {activeTab === 'roster' && (
+                        <div className="bg-white border rounded-xl shadow-sm p-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <h2 className="text-lg font-semibold mb-4">抽測人員名單</h2>
+                            <p className="text-sm text-muted-foreground mb-4">請在下方輸入參與抽籤的人員名單，每行輸入一名（例如：分隊-姓名）。空白行將被自動忽略。</p>
+                            <textarea 
+                                className="w-full h-64 p-4 border rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                                value={roster}
+                                onChange={(e) => setRoster(e.target.value)}
+                                placeholder="請輸入名單..."
+                            ></textarea>
+                            <div className="mt-4 flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">目前有效人數：<strong className="text-primary">{getValidList().length}</strong> 人</span>
+                                <button onClick={() => setRoster('')} className="text-red-500 hover:text-red-700 font-medium transition flex items-center gap-1">
+                                    <IconTrash /> 清空名單
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 內容區域：抽籤作業 */}
+                    {activeTab === 'draw' && (
+                        <div className="bg-white border rounded-xl shadow-sm p-6 md:p-10 text-center animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col items-center">
+                            <div className="w-full max-w-sm mx-auto mb-8 bg-slate-50 p-6 rounded-xl border">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">本次欲抽出人數</label>
+                                <div className="flex items-center justify-center gap-4">
+                                    <button onClick={() => setDrawCount(Math.max(1, drawCount - 1))} className="w-10 h-10 rounded-full border bg-white hover:bg-slate-100 flex items-center justify-center text-xl font-medium transition">-</button>
+                                    <input 
+                                        type="number" 
+                                        min="1" 
+                                        className="w-20 text-center text-2xl font-bold p-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        value={drawCount}
+                                        onChange={(e) => setDrawCount(parseInt(e.target.value) || 1)}
+                                    />
+                                    <button onClick={() => setDrawCount(drawCount + 1)} className="w-10 h-10 rounded-full border bg-white hover:bg-slate-100 flex items-center justify-center text-xl font-medium transition">+</button>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-3">從 {getValidList().length} 人中隨機抽出</p>
+                            </div>
+
+                            <button 
+                                onClick={handleDraw}
+                                disabled={isDrawing || getValidList().length === 0}
+                                className={`w-full max-w-sm py-4 rounded-xl text-lg font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2
+                                    ${isDrawing ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-xl'}`}
+                            >
+                                {isDrawing ? (
+                                    <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 洗牌中...</>
+                                ) : (
+                                    <><IconPlay /> 開始抽測</>
+                                )}
+                            </button>
+
+                            {/* 抽籤跳動動畫區 */}
+                            {isDrawing && (
+                                <div className="mt-10 p-8 w-full border-2 border-dashed border-primary/30 rounded-2xl bg-primary/5">
+                                    <p className="text-3xl md:text-5xl font-black text-primary/80 tracking-widest">{tempName}</p>
+                                </div>
+                            )}
+
+                            {/* 抽籤結果顯示區 */}
+                            {currentResult && !isDrawing && (
+                                <div className="mt-10 w-full animate-in zoom-in-95 duration-500">
+                                    <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center justify-center gap-2">
+                                        🎉 本次抽測名單 🎉
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {currentResult.map((name, idx) => (
+                                            <div key={idx} className="bg-green-50 border border-green-200 p-4 rounded-lg shadow-sm flex items-center justify-between">
+                                                <span className="text-green-800 font-bold text-lg">{name}</span>
+                                                <span className="bg-green-200 text-green-800 text-xs px-2 py-1 rounded font-mono">#{idx + 1}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 內容區域：歷史紀錄 */}
+                    {activeTab === 'history' && (
+                        <div className="bg-white border rounded-xl shadow-sm p-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-lg font-semibold">抽測歷史紀錄</h2>
+                                {history.length > 0 && (
+                                    <button onClick={() => {if(window.confirm('確定要清除所有紀錄嗎？')) setHistory([])}} className="text-sm text-red-500 hover:text-red-700 flex items-center gap-1 transition">
+                                        <IconTrash /> 清除全部
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {history.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                                    <IconHistory className="mx-auto h-8 w-8 mb-3 opacity-20" />
+                                    <p>尚無抽籤紀錄</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                                    {history.map((record, i) => (
+                                        <div key={record.id} className="border rounded-lg p-4 bg-slate-50 hover:bg-slate-100 transition">
+                                            <div className="flex justify-between items-center mb-3 border-b pb-2">
+                                                <span className="font-medium text-sm text-slate-500">第 {history.length - i} 次抽測</span>
+                                                <span className="text-xs font-mono bg-slate-200 px-2 py-1 rounded text-slate-600">{record.time}</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {record.results.map((name, idx) => (
+                                                    <span key={idx} className="bg-white border shadow-sm px-3 py-1.5 rounded-md text-sm font-bold text-slate-800">
+                                                        {name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>

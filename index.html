@@ -232,6 +232,55 @@
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(220,38,38,0.2);
     }
+
+
+    /* DEAL + FLIP CARDS */
+    .winner-card{
+      perspective: 1000px;
+      transform-style: preserve-3d;
+      position: relative;
+      min-height: 132px;
+    }
+    .winner-card .card-inner{
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+    }
+    .winner-card.face-down .card-inner{ transform: rotateY(180deg); }
+    .winner-card .card-front,
+    .winner-card .card-back{
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .winner-card .card-back{
+      transform: rotateY(180deg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(circle at 30% 20%, rgba(37,99,235,0.25), transparent 60%),
+                  radial-gradient(circle at 70% 30%, rgba(220,38,38,0.22), transparent 55%),
+                  linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.35) 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.45);
+    }
+    .winner-card .card-front{
+      background: linear-gradient(135deg, rgba(220,38,38,0.10) 0%, rgba(26,26,46,0.8) 100%);
+      border: 1px solid rgba(220,38,38,0.3);
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .card-back .back-mark{
+      font-family: var(--font-mono);
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.65);
+      font-weight: 900;
+      text-shadow: 0 0 18px rgba(37,99,235,0.35);
+    }
     .winner-brigade {
       font-size: 11px;
       color: var(--accent-gold);
@@ -352,7 +401,9 @@
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
   }
-  function playTick() { playTone(1200, 'square', 0.05, 0.02); }
+  function playTick() { /* disabled in flip mode */ }
+  function playFlip(){ playTone(420, 'triangle', 0.045, 0.04); setTimeout(()=>playTone(260, 'sine', 0.06, 0.03), 40); }
+
   function playLock() { playTone(800, 'square', 0.1, 0.05); setTimeout(()=>playTone(1200, 'square', 0.15, 0.05), 80); }
   function playSuccess() {
     playTone(523.25, 'triangle', 0.2, 0.1);
@@ -545,56 +596,63 @@
       el('rollingName').textContent = "READY";
       await sleep(150);
 
+      // Deal: pre-render all face-down cards first (instant)
+      const cards = [];
+      for(let i=0; i<picked.length; i++){
+        const r = picked[i];
+        const card = document.createElement('div');
+        card.className = 'winner-card face-down';
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">
+              <div class="winner-brigade">${brigadeNames[key]}</div>
+              <div class="winner-no">#${String(i+1).padStart(2,'0')}</div>
+              <div class="winner-name">${r.name}</div>
+              <div class="winner-unit">${r.unit} ${r.title}</div>
+              <div class="winner-id">${r.empId}</div>
+            </div>
+            <div class="card-back">
+              <div class="back-mark">TFD</div>
+            </div>
+          </div>
+        `;
+        el('winnersGrid').appendChild(card);
+        cards.push(card);
+      }
+
+      // Flip: reveal one by one with focus + sound
       for(let i=0; i<picked.length; i++){
         const r = picked[i];
         el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
-        
-        // Rolling animation
+
+        // micro-roll on big screen
         let rollTime = 120;
         let endTime = Date.now() + rollTime;
-        
-        return new Promise(resolveOuter => {
-          function roll() {
-            if(Date.now() < endTime) {
+        await new Promise(resolve => {
+          function roll(){
+            if(Date.now() < endTime){
               el('rollingName').textContent = randPick(list, Math.random).name;
-              playTick();
               requestAnimationFrame(roll);
-            } else {
-              // Final picked
+            }else{
               el('rollingName').textContent = r.name;
               el('rollingName').style.color = "var(--accent-red)";
-              playLock();
-              
-              // Add to grid
-              const card = document.createElement('div');
-              card.className = 'winner-card';
-              card.innerHTML = `
-                <div class="winner-brigade">${brigadeNames[key]}</div>
-                <div class="winner-no">#${String(i+1).padStart(2,'0')}</div>
-                <div class="winner-name">${r.name}</div>
-                <div class="winner-unit">${r.unit} ${r.title}</div>
-                <div class="winner-id">${r.empId}</div>
-              `;
-              el('winnersGrid').appendChild(card);
-              // window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              
-              resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
-              
-              setTimeout(async () => {
-                el('rollingName').style.color = "var(--text-light)";
-                if(i < picked.length - 1) {
-                  await sleep(0);
-                  resolveOuter();
-                } else {
-                  resolveOuter();
-                }
-              }, 60);
+              resolve();
             }
           }
           roll();
-        }).then(() => {
-          // This loop continues for each picked person
         });
+
+        // focus this card and flip
+        const card = cards[i];
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        playFlip();
+        card.classList.remove('face-down');
+        setTimeout(()=>playLock(), 60);
+
+        resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
+
+        await sleep(120);
+        el('rollingName').style.color = "var(--text-light)";
       }
       await sleep(200);
     }

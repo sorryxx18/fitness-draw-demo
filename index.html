@@ -7,143 +7,131 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --tfd-red: #D32F2F;
       --tfd-blue: #1976D2;
-      --text-main: #2C3E50;
-      --text-muted: #607D8B;
+      --tfd-gold: #FFD600;
+      --text-main: #263238;
       --font-primary: 'Noto Sans TC', sans-serif;
-      --font-number: 'Montserrat', sans-serif;
+      --font-num: 'Montserrat', sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    /* 1. 動態流光漸層與反光底色 */
+    /* 1. 流動感漸層背景 */
     body {
       font-family: var(--font-primary);
       color: var(--text-main);
       min-height: 100vh;
-      overflow-x: hidden;
-      background: linear-gradient(-45deg, #f4f7fa, #e3ecf5, #f0f4f8, #eaf2f8);
+      background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 25%, #fdfbfb 50%, #eef1f5 75%, #fdfbfb 100%);
       background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
+      animation: flowingGradient 15s ease infinite;
+      overflow-x: hidden;
     }
-    @keyframes gradientBG {
+    @keyframes flowingGradient {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    
-    /* 左右兩側紅藍微光反光 */
-    body::before {
-      content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 5% 20%, rgba(211,47,47,0.05) 0%, transparent 40%),
-                  radial-gradient(circle at 95% 80%, rgba(25,118,210,0.06) 0%, transparent 40%);
-      pointer-events: none; z-index: -1;
-    }
 
+    /* 頂部 Header - 明亮 TFD 風格 */
     .header {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
-      padding: 16px 32px;
+      padding: 12px 40px;
       display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      border-top: 5px solid var(--tfd-red);
-      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      border-top: 6px solid var(--tfd-red);
+      position: sticky; top: 0; z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
-    .logo-zone { display: flex; align-items: center; gap: 16px; }
-    .header-title h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
-    .header-title p { font-size: 12px; color: var(--tfd-blue); font-family: var(--font-number); font-weight: 700; letter-spacing: 2px; }
-    
-    .audit-badge {
-      background: rgba(25,118,210,0.05); border: 1px solid rgba(25,118,210,0.2);
-      border-radius: 8px; padding: 8px 16px; font-size: 12px; font-family: var(--font-number);
-      display: flex; gap: 16px; color: var(--tfd-blue); font-weight: 700;
+    .logo-zone { display: flex; align-items: center; gap: 15px; }
+    .logo-img { width: 50px; height: 50px; object-fit: contain; }
+    .header-title h1 { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #1a1a1a; }
+    .header-title p { font-size: 11px; color: var(--tfd-blue); font-family: var(--font-num); font-weight: 700; letter-spacing: 2px; }
+
+    /* 頂部稽核資訊 */
+    .audit-bar {
+      display: flex; gap: 20px; font-family: var(--font-num); font-size: 12px;
+      background: #f8f9fa; padding: 10px 20px; border-radius: 50px; border: 1px solid #dee2e6;
     }
-    .audit-badge span { color: var(--tfd-red); font-weight: 900; }
+    .audit-label { color: var(--tfd-blue); font-weight: 700; }
+    .audit-value { color: var(--tfd-red); font-weight: 900; }
 
-    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .main-content { max-width: 1300px; margin: 30px auto; padding: 0 25px; }
 
-    /* 毛玻璃質感面板 */
-    .control-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 40px; }
-    .panel {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      border-radius: 16px; padding: 24px;
-      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+    /* 控制面板 - 毛玻璃與反光 */
+    .control-grid { display: grid; grid-template-columns: 350px 1fr; gap: 25px; margin-bottom: 40px; }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(15px);
+      border-radius: 20px; padding: 25px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.05);
     }
-    .panel-title { font-size: 16px; font-weight: 700; color: #1565C0; margin-bottom: 16px; border-bottom: 2px solid rgba(25,118,210,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .panel-title { 
+      font-size: 17px; font-weight: 900; color: #1a237e; margin-bottom: 20px; 
+      border-left: 5px solid var(--tfd-red); padding-left: 12px;
+    }
 
-    .btn { padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; font-size: 14px; }
-    .btn-red { background: linear-gradient(135deg, var(--tfd-red), #B71C1C); color: white; width: 100%; font-size: 16px; padding: 14px; margin-top: 16px; box-shadow: 0 4px 15px rgba(211,47,47,0.3); }
-    .btn-red:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(211,47,47,0.4); }
-    .btn-red:disabled { background: #B0BEC5; box-shadow: none; cursor: not-allowed; }
-    .btn-blue { background: var(--tfd-blue); color: white; }
-    .btn-blue:hover { background: #1565C0; }
-    .btn-outline { background: white; border: 1px solid #CFD8DC; color: var(--text-main); }
-    .btn-outline:hover { background: #F5F7F8; border-color: var(--tfd-blue); color: var(--tfd-blue); }
+    /* 按鈕樣式 */
+    .btn { padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; font-size: 14px; }
+    .btn-primary { background: linear-gradient(135deg, var(--tfd-red), #b71c1c); color: white; width: 100%; font-size: 18px; padding: 16px; margin-top: 15px; box-shadow: 0 5px 15px rgba(211,47,47,0.3); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(211,47,47,0.4); }
+    .btn-primary:disabled { background: #9e9e9e; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-outline { background: #fff; border: 1px solid #cfd8dc; color: #455a64; }
+    .btn-outline:hover { border-color: var(--tfd-blue); color: var(--tfd-blue); background: #f1f8ff; }
 
     input[type="number"], input[type="text"] {
-      padding: 10px 12px; border: 1px solid #CFD8DC; border-radius: 8px;
-      font-family: var(--font-number); font-size: 14px; outline: none; transition: 0.2s;
+      padding: 12px; border: 1px solid #cfd8dc; border-radius: 10px; outline: none; transition: 0.3s; font-family: var(--font-num);
     }
-    input[type="number"]:focus, input[type="text"]:focus { border-color: var(--tfd-blue); box-shadow: 0 0 0 3px rgba(25,118,210,0.15); }
+    input[type="number"]:focus, input[type="text"]:focus { border-color: var(--tfd-blue); box-shadow: 0 0 0 4px rgba(25,118,210,0.1); }
 
-    .upload-zone {
-      border: 2px dashed #90A4AE; border-radius: 12px; padding: 24px; text-align: center;
-      cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.5); display: block; margin-bottom: 16px;
+    /* 單位清單 */
+    .list-container { background: rgba(255,255,255,0.4); border-radius: 12px; padding: 15px; border: 1px solid rgba(0,0,0,0.05); }
+    .quota-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 15px; background: white; border-radius: 10px; margin-bottom: 10px;
+      border: 1px solid #eceff1; transition: 0.2s;
     }
-    .upload-zone:hover { border-color: var(--tfd-blue); background: rgba(25,118,210,0.05); }
-    #csvFileInput { display: none; }
-
-    .toolbar { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.6); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #ECEFF1; }
-    .quota-list { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 8px; }
-    .quota-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border: 1px solid #ECEFF1; border-radius: 8px; background: white; transition: 0.2s; }
-    .quota-item:hover { border-color: var(--tfd-blue); box-shadow: 0 2px 10px rgba(25,118,210,0.08); }
-
-    /* 稽核輸入框區 */
-    .seed-input-zone { margin-top: 16px; padding: 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; }
-    .seed-input-zone label { font-size: 13px; font-weight: 700; color: var(--tfd-blue); display: block; margin-bottom: 6px; }
+    .quota-item:hover { transform: scale(1.02); border-color: var(--tfd-blue); }
 
     /* 大螢幕 */
     .mega-screen {
-      width: 100%; max-width: 800px; margin: 0 auto 40px auto; aspect-ratio: 21/9;
-      background: linear-gradient(135deg, #0A192F 0%, #112240 100%);
-      border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,0.1);
-      position: relative; overflow: hidden;
+      width: 100%; max-width: 900px; margin: 0 auto 50px auto; aspect-ratio: 21/9;
+      background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+      border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.1);
     }
-    .mega-unit { font-size: 20px; color: #64FFDA; letter-spacing: 4px; font-weight: 700; margin-bottom: 10px; }
-    .mega-name { font-size: 80px; font-weight: 900; color: white; letter-spacing: 2px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-    .mega-name.highlight { color: #FFD54F; }
-    .progress-text { position: absolute; top: 16px; right: 20px; color: rgba(255,255,255,0.5); font-family: var(--font-number); font-size: 16px; font-weight: 700; }
-    .skip-btn { position: absolute; bottom: 16px; right: 16px; font-size: 12px; padding: 6px 12px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .skip-btn:hover { background: var(--tfd-red); }
+    .mega-screen::after {
+      content: ""; position: absolute; inset: 0; 
+      background: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 20px 20px; pointer-events: none;
+    }
+    .mega-unit { font-size: 22px; color: #a2d2ff; letter-spacing: 5px; font-weight: 700; margin-bottom: 15px; }
+    .mega-name { font-size: 90px; font-weight: 900; color: white; letter-spacing: 5px; text-shadow: 0 0 20px rgba(255,255,255,0.3); z-index: 10; }
+    .mega-name.winner { color: var(--tfd-gold); text-shadow: 0 0 30px rgba(255,214,0,0.5); }
+    .draw-counter { position: absolute; top: 20px; right: 30px; color: rgba(255,255,255,0.4); font-family: var(--font-num); font-weight: 900; font-size: 20px; }
 
-    /* 卡片設計 - 取消蓋牌，改為彈出亮牌 */
-    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 60px; }
+    /* 卡片彈出動畫 (亮牌) */
+    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; padding-bottom: 100px; }
     .card {
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255,255,255,0.8);
-      border-top: 5px solid var(--tfd-red);
-      border-radius: 12px; padding: 16px; text-align: center;
-      box-shadow: 0 10px 30px rgba(31, 38, 135, 0.08);
-      /* 彈出動畫 */
-      opacity: 0;
-      transform: scale(0.5) translateY(-30px);
-      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      background: white; border-radius: 16px; padding: 20px; text-align: center;
+      border-top: 6px solid var(--tfd-red); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      animation: popReveal 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      opacity: 0; transform: scale(0.6) translateY(40px);
     }
-    @keyframes popIn {
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+    @keyframes popReveal {
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
-    .c-num { font-family: var(--font-number); font-weight: 900; font-size: 14px; color: var(--tfd-red); margin-bottom: 8px; background: #FFEBEE; display: inline-block; padding: 4px 10px; border-radius: 12px; }
-    .c-name { font-size: 26px; font-weight: 900; color: var(--text-main); margin-bottom: 6px; }
-    .c-unit { font-size: 13px; color: var(--text-muted); font-weight: 700; }
-    .c-id { font-family: var(--font-number); font-size: 12px; color: #90A4AE; margin-top: 10px; border-top: 1px dashed #ECEFF1; padding-top: 8px;}
+    .c-tag { font-family: var(--font-num); font-weight: 900; font-size: 14px; color: var(--tfd-red); margin-bottom: 10px; display: block; }
+    .c-name { font-size: 28px; font-weight: 900; color: #263238; margin-bottom: 5px; }
+    .c-unit { font-size: 14px; color: #607d8b; font-weight: 700; }
+    .c-id { font-family: var(--font-num); font-size: 13px; color: #b0bec5; margin-top: 12px; border-top: 1px solid #f1f3f4; padding-top: 10px; }
 
     #confettiCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
   </style>
@@ -152,156 +140,87 @@
 
   <header class="header">
     <div class="logo-zone">
-      <img src="./assets/logo.jpg" alt="TFD" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 50\'><circle cx=\'25\' cy=\'25\' r=\'24\' fill=\'%23D32F2F\'/><text x=\'50%\' y=\'50%\' fill=\'white\' font-size=\'14\' font-weight=\'bold\' text-anchor=\'middle\' dy=\'.3em\'>TFD</text></svg>'" style="width: 45px; height: 45px;">
+      <img src="./assets/logo.jpg" alt="TFD" class="logo-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 50\'><circle cx=\'25\' cy=\'25\' r=\'24\' fill=\'%23D32F2F\'/><text x=\'50%\' y=\'50%\' fill=\'white\' font-size=\'14\' font-family=\'sans-serif\' font-weight=\'bold\' text-anchor=\'middle\' dy=\'.3em\'>TFD</text></svg>'">
       <div class="header-title">
-        <h1>體能抽測抽籤系統</h1>
-        <p>AUDIT-PROOF LOTTERY SYSTEM</p>
+        <h1>臺北市政府消防局 體能抽測抽籤系統</h1>
+        <p>OFFICIAL DIGITAL SELECTION SYSTEM</p>
       </div>
     </div>
-    <div class="audit-badge">
-      <div>清冊 SHA-256: <span id="dashHash">---</span></div>
-      <div>亂數 Seed: <span id="dashSeed">---</span></div>
+    <div class="audit-bar">
+      <div><span class="audit-label">HASH:</span> <span id="dashHash" class="audit-value">---</span></div>
+      <div><span class="audit-label">SEED:</span> <span id="dashSeed" class="audit-value">---</span></div>
     </div>
   </header>
 
-  <div class="container">
+  <main class="main-content">
     <div class="control-grid">
-      <!-- 1. 資料匯入 -->
-      <div class="panel">
-        <div class="panel-title">1. 資料匯入</div>
-        <label class="upload-zone">
-          <div style="font-size: 28px; margin-bottom: 8px;">📥</div>
-          <div style="font-weight: 700; color: var(--tfd-blue);">點擊或拖曳上傳 CSV</div>
-          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">格式：大隊, 分隊, 員編, 姓名, 職稱</div>
-          <input type="file" id="csvFileInput" accept=".csv">
+      <!-- 1. 資料區 -->
+      <div class="glass-panel">
+        <div class="panel-title">名冊清單管理</div>
+        <label class="btn btn-outline" style="display: block; text-align: center; cursor: pointer; margin-bottom: 15px;">
+          📥 上傳自定義 CSV 名冊
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
         </label>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-outline" style="flex:1;" onclick="downloadSample()">📄 下載公版範例</button>
-          <button class="btn btn-blue" style="flex:1;" onclick="loadDemoData()">✨ 重新載入測試名單</button>
+        <button class="btn btn-outline" style="width: 100%; margin-bottom: 15px;" onclick="loadDemoData()">✨ 載入預設測試名單</button>
+        <button class="btn btn-outline" style="width: 100%;" onclick="downloadSample()">📄 下載 CSV 範例檔</button>
+        
+        <div style="margin-top: 25px;">
+          <label style="font-size: 13px; font-weight: 900; color: var(--tfd-blue); margin-bottom: 8px; display: block;">🔑 稽核驗證碼 (Seed)</label>
+          <input type="text" id="seedInput" placeholder="輸入特定代碼以重現結果..." style="width: 100%;">
         </div>
       </div>
 
-      <!-- 2. 抽籤設定 -->
-      <div class="panel">
-        <div class="panel-title">
-          <span>2. 抽籤單位與名額設定</span>
-          <label style="font-size: 13px; font-weight: normal; cursor: pointer; color: var(--tfd-red); display: flex; align-items: center; gap: 4px;">
-            <input type="checkbox" id="turboMode"> ⏩ 極速模式
-          </label>
-        </div>
-        
-        <div class="toolbar">
-          <label style="font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <input type="checkbox" id="checkAllBtn" checked onchange="toggleAllUnits(this.checked)"> 全選單位
-          </label>
-          <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 13px; font-weight: 700;">批量設定人數：</span>
-            <input type="number" id="globalQuotaInput" placeholder="人數" style="width: 80px;" value="20">
-            <button class="btn btn-outline" style="padding: 8px 14px;" onclick="applyGlobalQuota()">套用</button>
+      <!-- 2. 設定區 -->
+      <div class="glass-panel">
+        <div class="panel-title">抽籤單位與名額設定</div>
+        <div style="display: flex; gap: 20px; align-items: center; background: #f1f3f4; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+          <label style="font-weight: 700; cursor: pointer;"><input type="checkbox" id="checkAllBtn" checked onchange="toggleAllUnits(this.checked)"> 全選單位</label>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 13px; font-weight: 700;">統一人數：</span>
+            <input type="number" id="globalQuotaInput" value="20" style="width: 80px;">
+            <button class="btn btn-outline" style="padding: 8px 15px;" onclick="applyGlobalQuota()">批次套用</button>
           </div>
+          <label style="color: var(--tfd-red); font-weight: 700; cursor: pointer; padding-left: 15px; border-left: 1px solid #ccc;">
+            <input type="checkbox" id="turboMode"> 極速模式
+          </label>
         </div>
 
-        <div class="quota-list" id="quotaList">
-          <div style="text-align: center; color: var(--text-muted); padding: 30px;">載入中...</div>
+        <div class="list-container" id="quotaList">
+          <div style="text-align: center; color: #90a4ae; padding: 20px;">等待資料載入中...</div>
         </div>
 
-        <!-- 稽核輸入框 -->
-        <div class="seed-input-zone">
-          <label>🔑 稽核驗證碼 (Seed) <span style="font-weight:normal; color:#7F8C8D; font-size:11px; margin-left:8px;">※ 輸入相同的密碼，將重現一模一樣的抽籤結果</span></label>
-          <input type="text" id="seedInput" placeholder="留空將自動產生隨機碼..." style="width: 100%;">
-        </div>
-
-        <button class="btn btn-red" id="btnStartDraw" disabled>▶ 開始正式抽籤</button>
+        <button class="btn btn-primary" id="btnStartDraw" disabled>▶ 開始抽籤程序</button>
       </div>
     </div>
 
     <!-- 舞台區 -->
     <div id="stageArea" style="display: none;">
-      <div class="mega-screen" id="bigScreen">
-        <div class="progress-text" id="drawProgress">0 / 0</div>
-        <div class="mega-unit" id="dispUnit">準備就緒</div>
+      <div class="mega-screen">
+        <div class="draw-counter" id="drawProgress">0 / 0</div>
+        <div class="mega-unit" id="dispUnit">單位名稱</div>
         <div class="mega-name" id="dispName">READY</div>
-        <button class="skip-btn" id="btnSkip">⏭ 略過大螢幕動畫</button>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 2px solid #E0E6ED; padding-bottom: 12px;">
-        <h2 style="color: var(--tfd-blue); font-weight: 900; letter-spacing: 2px;">🏆 抽測名單</h2>
-        <button class="btn btn-outline" onclick="exportResult()">💾 匯出稽核證明檔 (CSV)</button>
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 3px solid #dee2e6; padding-bottom: 15px;">
+        <h2 style="font-weight: 900; letter-spacing: 2px;">🏆 本次抽中名冊</h2>
+        <button class="btn btn-outline" onclick="exportResult()">💾 下載抽籤結果稽核檔</button>
       </div>
       <div class="winners-grid" id="winnersGrid"></div>
     </div>
-  </div>
+  </main>
 
   <canvas id="confettiCanvas"></canvas>
 
 <script>
-  const state = { fileHash: '', rows:[], unitsMap: {}, result:[], seed: '', isDrawing: false, skipAnimation: false, hasDrawn: false };
+  // ================= 狀態核心 =================
+  const state = { fileHash: '', rows:[], unitsMap: {}, result:[], seed: '', isDrawing: false, hasDrawn: false };
   const el = id => document.getElementById(id);
   const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-  // ================= 預設載入功能 =================
-  window.addEventListener('DOMContentLoaded', () => {
-    loadDemoData(); // 一進網頁自動載入測試名單
-  });
+  // 1. 初始化：自動載入測試名單
+  window.addEventListener('DOMContentLoaded', () => { loadDemoData(); });
 
-  window.addEventListener('beforeunload', (e) => {
-    if (state.isDrawing) e.returnValue = '抽籤進行中，離開將遺失資料！';
-  });
-
-  // ================= 音效與紙屑特效 =================
-  let audioCtx = null;
-  function initAudio() {
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  }
-  function playTone(freq, type, duration, vol=0.1) {
-    if(!audioCtx) return;
-    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-  }
-  const sndCountdown = () => playTone(330, 'square', 0.15, 0.05);
-  const sndGo = () => playTone(880, 'square', 0.4, 0.08);
-  const sndPop = () => playTone(450, 'triangle', 0.1, 0.06); // 取代翻牌聲，改為彈出聲
-  const sndSuccess = () => { playTone(523.25, 'sine', 0.2, 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.2, 0.1), 100); setTimeout(()=>playTone(783.99, 'sine', 0.4, 0.1), 200); }
-
-  const canvas = el('confettiCanvas'), ctx = canvas.getContext('2d');
-  let particles =[], animationId = null;
-  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-  function fireConfetti() {
-    const colors =['#D32F2F', '#1976D2', '#FFC107'];
-    particles =[];
-    for(let i=0; i<150; i++) {
-      const isLeft = i % 2 === 0;
-      particles.push({
-        x: isLeft ? canvas.width * 0.1 : canvas.width * 0.9, y: canvas.height,
-        vx: (isLeft ? 1 : -1) * (Math.random() * 15 + 5), vy: -(Math.random() * 20 + 15),
-        size: Math.random() * 10 + 6, color: colors[Math.floor(Math.random() * colors.length)],
-        tilt: Math.random() * 10 - 10, tiltAngle: 0, tiltAngleInc: (Math.random() * 0.07) + 0.05,
-        shape: Math.random() > 0.5 ? 'rect' : 'circle'
-      });
-    }
-    if(!animationId) renderConfetti();
-  }
-  function renderConfetti() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); let active = false;
-    particles.forEach(p => {
-      p.tiltAngle += p.tiltAngleInc; p.x += p.vx; p.vy += 0.4; p.y += p.vy; p.vx *= 0.98;
-      if (p.y <= canvas.height) active = true;
-      ctx.save(); ctx.translate(p.x + p.size/2, p.y + p.size/2); ctx.scale(1, Math.cos(p.tiltAngle)); ctx.rotate(p.tilt);
-      ctx.fillStyle = p.color;
-      p.shape === 'rect' ? ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 1.2) : (ctx.beginPath(), ctx.arc(0, 0, p.size/2, 0, 2 * Math.PI), ctx.fill());
-      ctx.restore();
-    });
-    active ? animationId = requestAnimationFrame(renderConfetti) : (animationId = null, ctx.clearRect(0,0,canvas.width,canvas.height));
-  }
-
-  // ================= 嚴謹 Hash & PRNG =================
+  // ================= 密碼學隨機演算法 (可重現結果) =================
   async function sha256(text) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
     return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
@@ -319,37 +238,65 @@
     }
   }
 
-  // ================= 資料匯入與 UI =================
-  el('csvFileInput').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    processCSV(await file.text());
-  });
+  // ================= 音效與特效 =================
+  let audioCtx = null;
+  function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+  function playBeep(freq, type, dur, vol=0.08) {
+    if(!audioCtx) return;
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  }
 
+  // 升級紙屑 Canvas
+  const canvas = el('confettiCanvas'), ctx = canvas.getContext('2d');
+  let particles = [];
+  function fireConfetti() {
+    particles = [];
+    const colors = ['#D32F2F', '#1976D2', '#FFD600', '#ffffff'];
+    for(let i=0; i<150; i++) {
+      particles.push({
+        x: canvas.width/2, y: canvas.height/2,
+        vx: (Math.random()-0.5)*20, vy: (Math.random()-1)*20,
+        size: Math.random()*8+4, color: colors[Math.floor(Math.random()*colors.length)],
+        tilt: Math.random()*10, tiltAngle: 0, tiltAngleInc: Math.random()*0.1
+      });
+    }
+    renderConfetti();
+  }
+  function renderConfetti() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let active = false;
+    particles.forEach(p => {
+      p.tiltAngle += p.tiltAngleInc; p.x += p.vx; p.vy += 0.4; p.y += p.vy;
+      if(p.y <= canvas.height) active = true;
+      ctx.beginPath(); ctx.lineWidth = p.size; ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.size, p.y); ctx.lineTo(p.x + p.tilt, p.y + p.size);
+      ctx.stroke();
+    });
+    if(active) requestAnimationFrame(renderConfetti);
+  }
+
+  // ================= 資料處理 =================
   async function processCSV(text) {
     state.fileHash = (await sha256(text)).slice(0, 16);
     el('dashHash').textContent = state.fileHash;
-
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    if(lines.length < 2) return alert('檔案內容過少或格式錯誤');
-    
-    state.rows =[]; state.unitsMap = {};
+    state.rows = []; state.unitsMap = {};
     for(let i=1; i<lines.length; i++) {
       const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
       if(cols.length >= 4) {
-        const uName = cols[0] || '未分類';
-        const row = { unit: uName, branch: cols[1], id: cols[2], name: cols[3], title: cols[4] || '' };
+        const row = { unit: cols[0], branch: cols[1], id: cols[2], name: cols[3], title: cols[4] || '' };
         state.rows.push(row);
-        if(!state.unitsMap[uName]) state.unitsMap[uName] =[];
-        state.unitsMap[uName].push(row);
+        if(!state.unitsMap[row.unit]) state.unitsMap[row.unit] = [];
+        state.unitsMap[row.unit].push(row);
       }
     }
     renderQuotaPanel();
-    
-    // 自動帶入預設人數並全選
-    el('globalQuotaInput').value = 5;
     applyGlobalQuota();
-    
     el('btnStartDraw').disabled = false;
   }
 
@@ -358,184 +305,131 @@
     Object.keys(state.unitsMap).forEach(unit => {
       const count = state.unitsMap[unit].length;
       const div = document.createElement('div'); div.className = 'quota-item';
-      div.innerHTML = `
-        <label style="cursor:pointer; display:flex; align-items:center; gap:10px; flex:1; font-weight:700;">
-          <input type="checkbox" class="u-cb" value="${unit}" checked>
-          ${unit} <span style="color:#90A4AE; font-size:12px; font-weight:normal;">(母體 ${count} 人)</span>
-        </label>
-        <div style="font-size:14px; font-weight:700;">
-          抽 <input type="number" class="u-num" data-unit="${unit}" value="0" min="0" max="${count}" style="width:70px; text-align:center;"> 人
-        </div>
-      `;
+      div.innerHTML = `<label><input type="checkbox" class="u-cb" value="${unit}" checked> ${unit} (${count}人)</label>
+      <div style="font-weight:900;">抽 <input type="number" class="u-num" data-unit="${unit}" value="20" style="width:60px; text-align:center;"> 人</div>`;
       container.appendChild(div);
     });
   }
 
-  function toggleAllUnits(isChecked) { document.querySelectorAll('.u-cb').forEach(cb => cb.checked = isChecked); }
+  function toggleAllUnits(chk) { document.querySelectorAll('.u-cb').forEach(c => c.checked = chk); }
   function applyGlobalQuota() {
-    const num = parseInt(el('globalQuotaInput').value, 10);
-    if(isNaN(num) || num < 0) return alert('請輸入有效數字');
-    document.querySelectorAll('.u-num').forEach(input => {
-      input.value = Math.min(num, state.unitsMap[input.dataset.unit].length);
-    });
-    el('checkAllBtn').checked = true; toggleAllUnits(true);
+    const num = parseInt(el('globalQuotaInput').value);
+    document.querySelectorAll('.u-num').forEach(i => i.value = Math.min(num, state.unitsMap[i.dataset.unit].length));
   }
 
-  // 測試資料生成 (使用固定亂數，確保 Demo 每次資料相同，方便測試 Seed)
   function loadDemoData() {
-    const gen = xmur3("STATIC_DEMO_DATA_SEED"); const rng = sfc32(gen(), gen(), gen(), gen());
-    const last =["陳","林","黃","張","李","王","吳","劉","蔡","楊","許","鄭","謝","郭","賴"];
-    const first =["家豪","冠廷","承翰","子軒","俊傑","彥廷","怡君","雅婷","欣怡","佳穎","建宏"];
     let csv = "大隊,分隊,員編,姓名,職稱\n";
     ["第一大隊","第二大隊","第三大隊","第四大隊"].forEach((u, idx) => {
-      for(let i=1; i<=30; i++) {
-        const name = last[Math.floor(rng()*last.length)] + first[Math.floor(rng()*first.length)];
-        csv += `${u},${u.charAt(0)}區分隊,TFD${idx+1}${String(i).padStart(3,'0')},${name},隊員\n`;
+      for(let i=1; i<=60; i++) { // 擴大母體避免名單不足
+        csv += `${u},${u.charAt(0)}區分隊,TFD-${idx+1}-${String(i).padStart(3,'0')},測試人員${idx+1}-${i},隊員\n`;
       }
     });
     processCSV(csv);
   }
 
-  function downloadSample() {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob(["\uFEFF大隊,分隊,員編,姓名,職稱\n第一大隊,城中分隊,A123,王大明,隊員"], {type: 'text/csv;charset=utf-8-sig'}));
-    a.download = 'TFD_名單範例.csv'; a.click();
-  }
-
-  // ================= 動態彈出抽籤 =================
+  // ================= 核心抽籤程序 =================
   el('btnStartDraw').addEventListener('click', async () => {
-    if (state.hasDrawn && !confirm("您已經抽過籤了！重新抽籤將清除現有結果。確定要重抽嗎？")) return;
-    
+    if(state.hasDrawn && !confirm("已抽過籤，重抽會清除現有結果。確定嗎？")) return;
     initAudio();
-    const tasks =[];
+    const tasks = [];
     document.querySelectorAll('.quota-item').forEach(item => {
       if(item.querySelector('.u-cb').checked && parseInt(item.querySelector('.u-num').value) > 0) {
         tasks.push({ unit: item.querySelector('.u-cb').value, count: parseInt(item.querySelector('.u-num').value) });
       }
     });
-    if(tasks.length === 0) return alert('請設定至少一個抽籤單位與人數');
+    if(tasks.length === 0) return alert("請設定單位與人數");
 
-    // UI 切換
-    el('btnStartDraw').disabled = true;
-    el('stageArea').style.display = 'block';
-    el('winnersGrid').innerHTML = '';
+    state.result = []; el('winnersGrid').innerHTML = ''; el('stageArea').style.display = 'block';
     
-    state.isDrawing = true; state.skipAnimation = false; state.result =[];
-    
-    // 檢查是否有使用者輸入的 Seed
+    // Seed 處理
     const customSeed = el('seedInput').value.trim();
-    state.seed = customSeed !== "" ? customSeed : ("TFD_" + Math.random().toString(36).substr(2, 6).toUpperCase());
+    state.seed = customSeed !== "" ? customSeed : ("TFD-" + Math.random().toString(36).substr(2,6).toUpperCase());
+    el('dashSeed').textContent = state.seed; el('seedInput').value = state.seed;
     
-    el('seedInput').value = state.seed; // 回填 UI
-    el('dashSeed').textContent = state.seed;
-    
-    const gen = xmur3(state.seed);
-    const rng = sfc32(gen(), gen(), gen(), gen());
+    const gen = xmur3(state.seed); const rng = sfc32(gen(), gen(), gen(), gen());
 
-    try {
-      for(const task of tasks) await runDrawSequence(task.unit, task.count, rng);
-      
-      el('drawProgress').textContent = "完成";
-      el('dispUnit').textContent = "MISSION COMPLETE";
-      el('dispName').textContent = "全部抽籤完畢";
-      el('dispName').classList.add('highlight');
-      sndSuccess(); fireConfetti(); state.hasDrawn = true;
-    } catch(e) { console.error(e); alert("發生錯誤!"); }
-    finally { el('btnStartDraw').disabled = false; state.isDrawing = false; }
+    state.isDrawing = true;
+    for(const task of tasks) {
+      await runDraw(task.unit, task.count, rng);
+    }
+    
+    el('dispName').textContent = "抽籤完畢"; el('dispName').classList.add('winner');
+    fireConfetti(); playBeep(880, 'sine', 0.5); state.hasDrawn = true; state.isDrawing = false;
   });
 
-  el('btnSkip').onclick = () => { state.skipAnimation = true; };
-
-  async function runDrawSequence(unitName, count, rng) {
-    const list = [...state.unitsMap[unitName]];
-    // Fisher-Yates 洗牌
-    for(let i = list.length - 1; i > 0; i--) {
+  async function runDraw(unitName, count, rng) {
+    const candidates = [...state.unitsMap[unitName]];
+    // Fisher-Yates 洗牌 (保證不重複關鍵點)
+    for(let i = candidates.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
-      [list[i], list[j]] = [list[j], list[i]];
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    const winners = list.slice(0, count);
-    const isTurbo = el('turboMode').checked;
+    const winners = candidates.slice(0, count);
+    const turbo = el('turboMode').checked;
 
-    el('dispUnit').textContent = `現在抽取：${unitName}`;
-    el('dispName').classList.remove('highlight');
-    el('dispName').textContent = "準備";
+    el('dispUnit').textContent = `正在抽取：${unitName}`;
+    el('dispName').classList.remove('winner');
     el('bigScreen').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await sleep(500);
+    await sleep(600);
 
-    if(!isTurbo && !state.skipAnimation) {
-      for(const v of['3','2','1']) {
-        if(state.skipAnimation) break;
-        el('dispName').textContent = v; sndCountdown(); await sleep(600);
-      }
-      if(!state.skipAnimation) { el('dispName').textContent = "GO!"; sndGo(); await sleep(400); }
-    }
-
-    // 逐一彈出亮牌 (取消發蓋著的牌)
     for(let i=0; i<winners.length; i++) {
       const w = winners[i];
-      state.result.push(w);
-      
-      el('drawProgress').textContent = `進度: ${i+1} / ${count}`;
+      state.result.push({ ...w, drawOrder: i+1 });
+      el('drawProgress').textContent = `${i+1} / ${count}`;
 
-      if(state.skipAnimation) {
-        appendWinnerCard(w, i);
-        continue;
-      }
-
-      if(!isTurbo && i < 3) {
-        // 前 3 名滾動名字
-        let roll = 0;
-        while(roll < 10 && !state.skipAnimation) {
-          el('dispName').textContent = list[Math.floor(Math.random()*list.length)].name;
-          await sleep(50); roll++;
+      if(!turbo && i < 3) {
+        // 前3名儀式感滾動
+        for(let r=0; r<10; r++) {
+          el('dispName').textContent = candidates[Math.floor(Math.random()*candidates.length)].name;
+          await sleep(60);
         }
-        el('dispName').textContent = w.name;
-        el('dispName').classList.add('highlight');
-        sndPop();
-        
-        // 生成並彈出卡片
-        const newCard = appendWinnerCard(w, i);
-        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        await sleep(1000);
-        el('dispName').classList.remove('highlight');
+        el('dispName').textContent = w.name; el('dispName').classList.add('winner');
+        playBeep(660, 'square', 0.2);
+        const card = appendCard(w, i+1);
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await sleep(1000); el('dispName').classList.remove('winner');
       } else {
-        // 極速連抽
+        // 連抽模式
         el('dispName').textContent = w.name;
-        sndPop();
-        const newCard = appendWinnerCard(w, i);
-        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        await sleep(200);
+        playBeep(440, 'triangle', 0.05);
+        const card = appendCard(w, i+1);
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await sleep(turbo ? 50 : 200);
       }
     }
-    await sleep(400);
   }
 
-  // 生成正面卡片並附加彈出動畫
-  function appendWinnerCard(w, idx) {
+  function appendCard(w, num) {
     const card = document.createElement('div');
-    card.className = "card"; // 內建 popIn 動畫
-    card.innerHTML = `
-      <div class="c-num">WINNER #${String(idx+1).padStart(2,'0')}</div>
-      <div class="c-name">${w.name}</div>
-      <div class="c-unit">${w.branch} ${w.title}</div>
-      <div class="c-id">${w.id}</div>
-    `;
+    card.className = "card";
+    card.innerHTML = `<span class="c-tag">#${String(num).padStart(2,'0')}</span>
+    <div class="c-name">${w.name}</div><div class="c-unit">${w.branch} ${w.title}</div><div class="c-id">${w.id}</div>`;
     el('winnersGrid').appendChild(card);
     return card;
   }
 
-  // ================= 匯出 =================
+  // ================= 匯出稽核 =================
   function exportResult() {
-    if(state.result.length === 0) return alert('無資料');
-    let csv = '\uFEFF大隊,分隊,員編,姓名,職稱\n';
-    state.result.forEach(r => csv += `${r.unit},${r.branch},${r.id},${r.name},${r.title}\n`);
-    csv += `\n--- 稽核證明資訊 ---\n時間,${new Date().toLocaleString()}\n母體 Hash,${state.fileHash}\n抽籤 Seed,${state.seed}\n`;
+    if(state.result.length === 0) return;
+    let csv = `\uFEFF--- 抽籤稽核資訊 ---\n`;
+    csv += `抽籤時間,${new Date().toLocaleString()}\n`;
+    csv += `母體清冊 HASH,${state.fileHash}\n`;
+    csv += `抽籤驗證碼 SEED,${state.seed}\n\n`;
+    csv += `大隊,序號,分隊,員編,姓名,職稱\n`;
+    state.result.forEach(r => csv += `${r.unit},${r.drawOrder},${r.branch},${r.id},${r.name},${r.title}\n`);
     
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8-sig'}));
-    a.download = `TFD_抽測名單_稽核檔_${state.seed}.csv`; a.click();
+    a.download = `TFD_抽籤結果_${state.seed}.csv`; a.click();
   }
+
+  function downloadSample() {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(["\uFEFF大隊,分隊,員編,姓名,職稱\n第一大隊,城中分隊,A123,王大明,隊員"], {type: 'text/csv;charset=utf-8-sig'}));
+    a.download = 'TFD_名冊範例.csv'; a.click();
+  }
+  
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 </script>
 </body>
 </html>

@@ -727,94 +727,15 @@
   el('btnDraw').addEventListener('click', async () => {
     initAudio();
     if(!state.rosterRows.length){ alert('母體名單為空，請先載入範例。'); return; }
+
     el('btnDraw').disabled = true;
-    el('btnDraw').textContent = "抽籤進行中...";
-    
-    // Fix async loop for runDraw
-    const n = parseInt(el('pickCount').value,10);
-    const { seed, rng } = makeRng(el('seed').value);
-    state.drawSeed = seed;
-    const groups = groupRows();
-    for(let b=1;b<=4;b++){
-      if(groups[String(b)].length < n){
-        alert(`${brigadeNames[String(b)]} 母體人數不足`);
-        el('btnDraw').disabled = false;
-        el('btnDraw').textContent = "開始抽籤";
-        return;
-      }
+    el('btnDraw').textContent = '抽籤進行中...';
+    try{
+      await runDraw();
+      el('btnDraw').textContent = '重新抽籤';
+    }finally{
+      el('btnDraw').disabled = false;
     }
-    
-    setFairPanel();
-    const resultRows=[];
-    el('winnersGrid').innerHTML = '';
-
-    for(let b=1;b<=4;b++){
-      const key = String(b);
-      const list = groups[key];
-      const picked = pickN(list, n, rng);
-      
-      el('currentBrigade').textContent = `現在抽取：${brigadeNames[key]}`;
-      el('displayLabel').textContent = "即將抽出...";
-      el('rollingName').style.color = "var(--text-light)";
-      el('rollingName').textContent = "READY";
-      await sleep(1000);
-
-      for(let i=0; i<picked.length; i++){
-        const r = picked[i];
-        el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
-        
-        await new Promise(resolve => {
-          let rollTime = 1000;
-          let endTime = Date.now() + rollTime;
-          function roll() {
-            if(Date.now() < endTime) {
-              el('rollingName').textContent = randPick(list, Math.random).name;
-              playTick();
-              requestAnimationFrame(roll);
-            } else {
-              el('rollingName').textContent = r.name;
-              el('rollingName').style.color = "var(--accent-red)";
-              playLock();
-              
-              const card = document.createElement('div');
-              card.className = 'winner-card';
-              card.innerHTML = `
-                <div class="winner-brigade">${brigadeNames[key]}</div>
-                <div class="winner-no">#${String(i+1).padStart(2,'0')}</div>
-                <div class="winner-name">${r.name}</div>
-                <div class="winner-unit">${r.unit} ${r.title}</div>
-                <div class="winner-id">${r.empId}</div>
-              `;
-              el('winnersGrid').appendChild(card);
-              // window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              
-              resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
-              
-              setTimeout(() => {
-                el('rollingName').style.color = "var(--text-light)";
-                resolve();
-              }, 800);
-            }
-          }
-          roll();
-        });
-      }
-      await sleep(200);
-    }
-
-    el('currentBrigade').textContent = "抽籤完畢";
-    el('displayLabel').textContent = "MISSION ACCOMPLISHED";
-    el('rollingName').textContent = "DONE";
-    el('rollingName').style.color = "var(--accent-gold)";
-    
-    state.resultRows = resultRows;
-    state.resultCSV = '\uFEFF' + toResultCSV(resultRows);
-
-    fireConfetti();
-    playSuccess();
-    
-    el('btnDraw').textContent = "重新抽籤";
-    el('btnDraw').disabled = false;
   });
 
   el('btnResult').addEventListener('click', () => {

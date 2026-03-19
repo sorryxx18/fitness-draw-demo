@@ -289,6 +289,35 @@
     }
     @keyframes pulse3{
       0%{ transform: scale(0.96); opacity: .55; }
+
+    @keyframes sweepGlow{
+      0%{ background-position: -200% 0; opacity: .0; }
+      40%{ opacity: .9; }
+      100%{ background-position: 200% 0; opacity: .0; }
+    }
+    .winner-card.is-active{
+      outline: 2px solid rgba(255,179,0,0.85);
+      box-shadow:
+        0 0 32px rgba(255,179,0,0.28),
+        0 0 22px rgba(220,38,38,0.25),
+        0 0 22px rgba(37,99,235,0.22);
+      transform: translateY(-3px) scale(1.03);
+    }
+    .winner-card.is-active::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 14px;
+      background: linear-gradient(90deg,
+        transparent,
+        rgba(255,255,255,0.30),
+        transparent
+      );
+      background-size: 200% 100%;
+      animation: sweepGlow 520ms ease-out;
+      pointer-events:none;
+      mix-blend-mode: screen;
+    }
       100%{ transform: scale(1.0); opacity: 1; }
     }
     .winner-brigade {
@@ -412,9 +441,18 @@
     osc.stop(audioCtx.currentTime + duration);
   }
   function playTick() { /* disabled in flip mode */ }
-  function playFlip(){ playTone(420, 'triangle', 0.045, 0.04); setTimeout(()=>playTone(260, 'sine', 0.06, 0.03), 40); }
+  function playFlip(){
+    // gacha flip: soft whoosh + click
+    playTone(360, 'triangle', 0.04, 0.05);
+    setTimeout(()=>playTone(180, 'sine', 0.06, 0.04), 30);
+  }
 
-  function playLock() { playTone(800, 'square', 0.1, 0.05); setTimeout(()=>playTone(1200, 'square', 0.15, 0.05), 80); }
+  function playLock() {
+    // lock: low thump + sparkle
+    playTone(110, 'sine', 0.08, 0.08);
+    setTimeout(()=>playTone(880, 'triangle', 0.06, 0.05), 40);
+    setTimeout(()=>playTone(1320, 'triangle', 0.08, 0.04), 80);
+  }
   function playSuccess() {
     playTone(523.25, 'triangle', 0.2, 0.1);
     setTimeout(()=>playTone(659.25, 'triangle', 0.2, 0.1), 150);
@@ -601,6 +639,9 @@
       const picked = pickN(list, n, rng);
       
       el('currentBrigade').textContent = `現在抽取：${brigadeNames[key]}`;
+      // Camera focus: draw stage (big screen)
+      el('bigDisplay').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      await sleep(180);
       el('displayLabel').textContent = "即將抽出...";
       el('rollingName').style.color = "var(--text-light)";
       el('rollingName').textContent = "準備";
@@ -613,7 +654,7 @@
         el('rollingName').style.color = 'var(--accent-gold)';
         el('rollingName').style.animation = 'pulse3 200ms ease-out';
         playFlip();
-        await sleep(240);
+        await sleep(320);
         el('rollingName').style.animation = '';
       }
       el('rollingName').style.color = 'var(--text-light)';
@@ -683,6 +724,7 @@
         resultRows.push({ brigade:key, no: i+1, unit:r.unit, empId:r.empId, name:r.name, title:r.title });
 
         await sleep(120);
+        if((i+1) % 5 === 0) await sleep(220);
         el('rollingName').style.color = "var(--text-light)";
       }
       await sleep(200);

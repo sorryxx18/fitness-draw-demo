@@ -281,6 +281,16 @@
       font-weight: 900;
       text-shadow: 0 0 18px rgba(37,99,235,0.35);
     }
+
+    .winner-card.is-active{
+      outline: 2px solid rgba(255,179,0,0.65);
+      box-shadow: 0 0 26px rgba(255,179,0,0.22), 0 0 18px rgba(220,38,38,0.18);
+      transform: translateY(-2px) scale(1.02);
+    }
+    @keyframes pulse3{
+      0%{ transform: scale(0.96); opacity: .55; }
+      100%{ transform: scale(1.0); opacity: 1; }
+    }
     .winner-brigade {
       font-size: 11px;
       color: var(--accent-gold);
@@ -593,8 +603,22 @@
       el('currentBrigade').textContent = `現在抽取：${brigadeNames[key]}`;
       el('displayLabel').textContent = "即將抽出...";
       el('rollingName').style.color = "var(--text-light)";
+      el('rollingName').textContent = "準備";
+      await sleep(120);
+      // COUNTDOWN_321
+      const cd = ['3','2','1'];
+      for(const v of cd){
+        el('displayLabel').textContent = '抽籤開始';
+        el('rollingName').textContent = v;
+        el('rollingName').style.color = 'var(--accent-gold)';
+        el('rollingName').style.animation = 'pulse3 200ms ease-out';
+        playFlip();
+        await sleep(240);
+        el('rollingName').style.animation = '';
+      }
+      el('rollingName').style.color = 'var(--text-light)';
       el('rollingName').textContent = "READY";
-      await sleep(150);
+      await sleep(120);
 
       // Deal: pre-render all face-down cards first (instant)
       const cards = [];
@@ -620,7 +644,12 @@
         cards.push(card);
       }
 
-      // Flip: reveal one by one with focus + sound
+      
+
+      // One-time camera move: jump to winners wall before flipping
+      el('winnersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      await sleep(220);
+// Flip: reveal one by one with focus + sound
       for(let i=0; i<picked.length; i++){
         const r = picked[i];
         el('displayLabel').textContent = `第 ${i+1}/${n} 位`;
@@ -644,7 +673,9 @@
 
         // focus this card and flip
         const card = cards[i];
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // highlight focus (no per-card scrolling)
+        if(i>0) cards[i-1].classList.remove('is-active');
+        card.classList.add('is-active');
         playFlip();
         card.classList.remove('face-down');
         setTimeout(()=>playLock(), 60);

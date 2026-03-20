@@ -441,6 +441,37 @@
       padding-top: 12px; 
     }
 
+
+
+    /* =========================
+       Gacha-style emphasis (no extra time)
+       ========================= */
+    .card.is-active{
+      outline: 2px solid rgba(255, 193, 7, 0.85);
+      box-shadow: 0 0 28px rgba(255,193,7,0.25), 0 0 18px rgba(211,47,47,0.18);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .card.is-milestone{
+      outline: 2px solid rgba(255, 193, 7, 0.95);
+      box-shadow: 0 0 36px rgba(255,193,7,0.35), 0 0 22px rgba(25,118,210,0.18);
+      animation: gachaPulse 220ms ease-out;
+    }
+    .card.is-jackpot{
+      outline: 2px solid rgba(255, 215, 0, 0.98);
+      box-shadow: 0 0 46px rgba(255,215,0,0.45), 0 0 26px rgba(211,47,47,0.22);
+      animation: gachaJackpot 260ms ease-out;
+    }
+    @keyframes gachaPulse{
+      0%{ transform: translateY(-2px) scale(1.02); filter: brightness(1.0); }
+      60%{ transform: translateY(-3px) scale(1.05); filter: brightness(1.15); }
+      100%{ transform: translateY(-2px) scale(1.02); filter: brightness(1.0); }
+    }
+    @keyframes gachaJackpot{
+      0%{ transform: translateY(-2px) scale(1.02); filter: brightness(1.0) saturate(1.0); }
+      55%{ transform: translateY(-5px) scale(1.07); filter: brightness(1.25) saturate(1.2); }
+      100%{ transform: translateY(-2px) scale(1.02); filter: brightness(1.0) saturate(1.0); }
+    }
+
     /* 物理紙屑特效畫布 */
     #confettiCanvas { 
       position: fixed; 
@@ -755,8 +786,50 @@
   }
 
   const sndCountdown = () => playBeep(330, 'square', 0.15, 0.05);
-  const sndGo = () => playBeep(880, 'square', 0.4, 0.08);
+  const sndGo = () => { sfxWhoosh(0.07, 0.09); playBeep(880, 'square', 0.18, 0.07); };
   const sndPop = () => playBeep(440, 'triangle', 0.1, 0.06);
+
+  /* =========================================================================
+     [短促抽卡音效：不增加節奏總時長]
+  ========================================================================= */
+  function sfxWhoosh(vol = 0.06, dur = 0.08) {
+    try {
+      if(!audioCtx) return;
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 900;
+      filter.Q.value = 0.9;
+      const gain = audioCtx.createGain();
+      const t = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start();
+    } catch(e) {}
+  }
+
+  function sfxFlip() {
+    // crisp flip click
+    playBeep(520, 'triangle', 0.045, 0.05);
+    setTimeout(() => playBeep(260, 'sine', 0.05, 0.05), 35);
+  }
+
+  function sfxHit(tier = 'normal') {
+    // thunk + sparkle (tier controls intensity)
+    const base = tier === 'jackpot' ? 0.20 : (tier === 'milestone' ? 0.14 : 0.10);
+    playBeep(140, 'sine', 0.09, base);
+    setTimeout(() => playBeep(920, 'triangle', 0.06, base * 0.7), 40);
+    if (tier !== 'normal') setTimeout(() => playBeep(1320, 'triangle', 0.05, base * 0.6), 80);
+  }
+
   
   // 浮誇歡呼引擎：管樂團和弦 + 重低音轟炸 + 萬人白噪音掌聲
   function playExaggeratedFanfare() {
@@ -1180,6 +1253,8 @@
       }
     }
 
+    let prevCard = null;
+
     for (let i = 0; i < winners.length; i++) {
       const winner = winners[i]; 
       state.result.push({ ...winner, order: i + 1 }); 
@@ -1201,17 +1276,32 @@
         el('dispName').classList.add('highlight'); 
         sndPop();
         
-        const card = appendWinnerCard(winner, i + 1); 
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-        
-        await sleep(1200); 
+        const card = appendWinnerCard(winner, i + 1);
+        if (prevCard) prevCard.classList.remove('is-active','is-milestone','is-jackpot');
+        card.classList.add('is-active');
+        if ((i+1) % 5 === 0) card.classList.add('is-milestone');
+        if ((i+1) === count) card.classList.add('is-jackpot');
+        prevCard = card;
+        // SFX: flip + hit (no extra wait)
+        sfxFlip();
+        sfxHit((i+1)===count ? 'jackpot' : ((i+1)%5===0 ? 'milestone' : 'normal'));
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        await sleep(900); 
         el('dispName').classList.remove('highlight');
       } else {
         // 極速連抽
-        el('dispName').textContent = winner.name; 
-        sndPop();
-        
-        const card = appendWinnerCard(winner, i + 1); 
+        el('dispName').textContent = winner.name;
+        const card = appendWinnerCard(winner, i + 1);
+        if (prevCard) prevCard.classList.remove('is-active','is-milestone','is-jackpot');
+        card.classList.add('is-active');
+        if ((i+1) % 5 === 0) card.classList.add('is-milestone');
+        if ((i+1) === count) card.classList.add('is-jackpot');
+        prevCard = card;
+        sfxFlip();
+        sfxHit((i+1)===count ? 'jackpot' : ((i+1)%5===0 ? 'milestone' : 'normal'));
+
+         
         card.scrollIntoView({ behavior: isTurbo ? 'auto' : 'smooth', block: 'center' }); 
         
         await sleep(isTurbo ? 60 : 250);

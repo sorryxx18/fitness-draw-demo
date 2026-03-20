@@ -689,86 +689,42 @@
   
   // 浮誇歡呼引擎：管樂團和弦 + 重低音轟炸 + 萬人白噪音掌聲
   function playExaggeratedFanfare() {
+    // Safe, simple fanfare (avoids syntax errors / undefined vars)
     try {
-      if(!audioCtx) return;
-      const startTime = audioCtx.currentTime;
+      if (!audioCtx) return;
+      const t0 = audioCtx.currentTime;
 
-      // 1. 銅管和弦 (Sawtooth) 產生宏亮的勝利聲
-      const notes =[
-        {f: 523.25, d: 0.2}, 
-        {f: 659.25, d: 0.2}, 
-        {f: 783.99, d: 0.2}, 
-        {f: 1046.50, d: 0.8} 
-      ];
-
-      notes.forEach((note, i) => {
-        const t = startTime + i * 0.15;
-        // 疊加頻率創造管樂隊厚實感[note.f, note.f * 1.005, note.f * 0.995].forEach(freq => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          
-          osc.type = 'sawtooth'; 
-          osc.frequency.setValueAtTime(freq, t);
-          
-          gain.gain.setValueAtTime(0, t);
-          gain.gain.linearRampToValueAtTime(0.06, t + 0.05);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + note.d);
-          
-          osc.connect(gain); 
-          gain.connect(audioCtx.destination);
-          
-          osc.start(t); 
-          osc.stop(t + note.d + 0.1);
-        });
+      const chord = [523.25, 659.25, 783.99]; // C5 E5 G5
+      chord.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.06, t0 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.4);
       });
 
-      // 2. 禮炮重低音 (Boom)
-      const boomOsc = audioCtx.createOscillator();
+      // Low boom
+      const boom = audioCtx.createOscillator();
       const boomGain = audioCtx.createGain();
-      boomOsc.type = 'square'; 
-      boomOsc.frequency.setValueAtTime(150, startTime);
-      boomOsc.frequency.exponentialRampToValueAtTime(0.01, startTime + 1.5);
-      
-      boomGain.gain.setValueAtTime(0.4, startTime);
-      boomGain.gain.exponentialRampToValueAtTime(0.01, startTime + 1.5);
-      
-      boomOsc.connect(boomGain); 
+      boom.type = 'sine';
+      boom.frequency.setValueAtTime(140, t0);
+      boom.frequency.exponentialRampToValueAtTime(40, t0 + 0.25);
+      boomGain.gain.setValueAtTime(0.0001, t0);
+      boomGain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+      boomGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+      boom.connect(boomGain);
       boomGain.connect(audioCtx.destination);
-      boomOsc.start(startTime); 
-      boomOsc.stop(startTime + 1.5);
+      boom.start(t0);
+      boom.stop(t0 + 0.4);
 
-      // 3. 長達 4 秒的萬人歡呼聲 (Lowpass 白噪音模擬掌聲)
-      for(let i = 0; i < 40; i++) {
-        setTimeout(() => {
-          if (!audioCtx) return;
-          const noise = audioCtx.createBufferSource();
-          const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.3, audioCtx.sampleRate);
-          const data = buffer.getChannelData(0);
-          
-          // 產生白噪音
-          for(let j = 0; j < data.length; j++) {
-            data[j] = Math.random() * 2 - 1; 
-          }
-          noise.buffer = buffer;
-          
-          // 低通濾波器模擬人群遠距離掌聲
-          const filter = audioCtx.createBiquadFilter();
-          filter.type = 'lowpass'; 
-          filter.frequency.value = 1000 + Math.random() * 2000;
-          
-          const g = audioCtx.createGain();
-          g.gain.setValueAtTime(0.06, audioCtx.currentTime);
-          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-          
-          noise.connect(filter); 
-          filter.connect(g); 
-          g.connect(audioCtx.destination);
-          
-          noise.start();
-        }, i * 100);
-      }
-    } catch(e) {
-      // 忽略錯誤
+    } catch (e) {
+      // ignore
     }
   }
 

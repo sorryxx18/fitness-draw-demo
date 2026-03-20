@@ -551,7 +551,14 @@
       }
       .card{ border-radius: 16px; padding: 18px; }
       .c-name{ font-size: 26px; }
-    }
+    
+
+      /* Fix list-header overflow on mobile (turbo + volume) */
+      .list-header{ flex-wrap: wrap; gap: 10px; }
+      .list-header > div{ margin-left: 0 !important; width: 100%; justify-content: space-between; }
+      .list-header label{ padding-left: 0 !important; border-left: 0 !important; width: calc(50% - 6px); justify-content: flex-start; }
+      #sfxVolume{ max-width: 110px; }
+}
 
   </style>
 </head>

@@ -1332,6 +1332,14 @@
     }
   }
 
+    // Guard: ensure UI rendered all cards (some mobile browsers can drop the last paint)
+    verifyRenderedCount(unitName, count, winners);
+
+    // Force final focus to #count card so user always sees #20
+    const last = document.querySelector(`#winnersGrid .card[data-unit=\"${unitName}\"][data-order=\"${count}\"]`);
+    if (last) last.scrollIntoView({ behavior: 'auto', block: 'center' });
+
+
 
 
   function verifyRenderedCount(unitName, expected, winners) {

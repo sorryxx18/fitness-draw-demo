@@ -614,6 +614,14 @@
           <label style="color: var(--tfd-red); font-weight: 800; cursor: pointer; padding-left: 15px; border-left: 1px solid #dee2e6;">
             <input type="checkbox" id="turboMode"> ⏩ 極速連抽
           </label>
+          <label style="padding-left: 12px; border-left: 1px solid #dee2e6; font-weight: 800; color: #455a64; display:flex; align-items:center; gap:8px;">
+            🔊 音量
+            <select id="sfxVolume" style="padding: 6px 10px; border-radius: 10px; border: 1px solid #cfd8dc;">
+              <option value="0.9">小</option>
+              <option value="1.2" selected>中</option>
+              <option value="1.6">大</option>
+            </select>
+          </label>
         </div>
 
         <div class="quota-list" id="quotaList">
@@ -697,8 +705,14 @@
   });
 
   // 開啟網頁後自動載入測試資料，方便長官直接看 Demo
-  window.addEventListener('DOMContentLoaded', () => { 
-    loadDemoData(); 
+  window.addEventListener('DOMContentLoaded', () => {
+    // demo auto load
+    loadDemoData();
+    const sel = document.getElementById('sfxVolume');
+    if (sel) {
+      SFX_VOL = parseFloat(sel.value || '1.2');
+      sel.addEventListener('change', () => { SFX_VOL = parseFloat(sel.value || '1.2'); });
+    }
   });
 
 
@@ -749,6 +763,7 @@
   /* =========================================================================[浮誇音效與物理禮炮引擎]
   ========================================================================= */
   let audioCtx = null;
+  let SFX_VOL = 1.2;
 
   function initAudio() { 
     try {
@@ -764,6 +779,7 @@
   }
 
   function playBeep(freq, type, dur, vol = 0.08) {
+    vol = vol * (SFX_VOL || 1);
     try {
       if(!audioCtx) return;
       const osc = audioCtx.createOscillator();
@@ -1236,7 +1252,7 @@
     el('dispUnit').textContent = `現在抽取：${unitName}`; 
     el('dispName').classList.remove('highlight');
     el('stageScreen').scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-    await sleep(800);
+    await sleep(250);
 
     // 倒數儀式
     if (!isTurbo && !state.skipAnimation) {
@@ -1244,12 +1260,12 @@
         if (state.skipAnimation) break; 
         el('dispName').textContent = v; 
         sndCountdown(); 
-        await sleep(700);
+        await sleep(320);
       }
       if (!state.skipAnimation) { 
         el('dispName').textContent = "GO!"; 
         sndGo(); 
-        await sleep(500); 
+        await sleep(220); 
       }
     }
 
@@ -1265,7 +1281,7 @@
         continue; 
       }
 
-      if (!isTurbo && i < 3) {
+      if (!isTurbo && i === 0) {
         // 前 3 名慢速懸疑滾動
         for(let r = 0; r < 12; r++) { 
           el('dispName').textContent = candidates[Math.floor(Math.random() * candidates.length)].name; 
@@ -1309,9 +1325,29 @@
     }
   }
 
+
+
+  function verifyRenderedCount(unitName, expected, winners) {
+    // Make sure UI has the expected number of cards for this brigade.
+    const cards = [...document.querySelectorAll(`#winnersGrid .card[data-unit="${unitName}"]`)];
+    if (cards.length >= expected) return;
+
+    const existingOrders = new Set(cards.map(c => parseInt(c.dataset.order || '0', 10)));
+    for (let i = 0; i < winners.length; i++) {
+      const order = i + 1;
+      if (!existingOrders.has(order)) {
+        appendWinnerCard(winners[i], order);
+      }
+    }
+  }
+
+
   function appendWinnerCard(w, num) {
-    const card = document.createElement('div'); 
-    card.className = "card";
+    const card = document.createElement('div');
+    card.className = 'card';
+    // tag for audit/debug
+    card.dataset.unit = w.unit || '';
+    card.dataset.order = String(num);
     
     // 防護 XSS
     const escapeHTML = str => { 

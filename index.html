@@ -233,7 +233,6 @@
       margin-top: 15px; border-top: 1px dashed #e0e0e0; padding-top: 12px; 
     }
 
-    /* 紙屑特效畫布 */
     #confettiCanvas { 
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       pointer-events: none; z-index: 9999; 
@@ -265,8 +264,8 @@
       <div class="panel">
         <div class="panel-title">1. 名冊管理與稽核</div>
         <label class="upload-box" id="uploadBoxLabel">
-          <div style="font-size: 32px; margin-bottom: 10px;">📥</div>
-          <div style="font-weight: 800; color: var(--tfd-blue);">點擊或拖曳上傳 CSV 清冊</div>
+          <div id="uploadIcon" style="font-size: 32px; margin-bottom: 10px;">📥</div>
+          <div id="uploadTitle" style="font-weight: 800; color: var(--tfd-blue);">點擊或拖曳上傳 CSV 清冊</div>
           <div style="font-size: 12px; color: #78909c; margin-top: 6px;">標準欄位：大隊, 分隊, 員編, 姓名, 職稱</div>
           <input type="file" id="csvFileInput" accept=".csv">
         </label>
@@ -340,7 +339,7 @@
   ========================================================================= */
   const state = {
     fileHash: '',       // 名冊 SHA-256
-    rows: [],           // 完整名單
+    rows:[],           // 完整名單
     unitsMap: {},       // 以單位分類的名單
     result:[],         // 抽出的結果
     seed: '',           // 當前使用的 Seed
@@ -413,7 +412,7 @@
   ========================================================================= */
   let audioCtx = null;
   
-  // 嚴謹的音效初始化，避免因為瀏覽器限制導致整個程式 Crash
+  // 嚴謹的音效初始化，強制喚醒休眠的 Context
   function initAudio() { 
     try {
       if (!audioCtx) {
@@ -424,7 +423,7 @@
         audioCtx.resume();
       }
     } catch (e) {
-      console.warn("音效引擎初始化失敗 (可能是瀏覽器安全限制)", e);
+      console.warn("音效引擎初始化失敗", e);
     }
   }
 
@@ -544,7 +543,7 @@
      嚴謹的防呆設計，妥善處理異常符號與逗號
   ========================================================================= */
   
-  // 嚴謹的 CSV 單行解析器 (支援處理雙引號內的逗號，不會把名字切斷)
+  // 嚴謹的 CSV 單行解析器 (支援處理雙引號內的逗號)
   function parseCSVRow(str) {
     const result =[];
     let curVal = '';
@@ -552,7 +551,7 @@
     for (let i = 0; i < str.length; i++) {
       if (inQuotes) {
         if (str[i] === '"') {
-          if (i + 1 < str.length && str[i + 1] === '"') { curVal += '"'; i++; } // 跳脫雙引號
+          if (i + 1 < str.length && str[i + 1] === '"') { curVal += '"'; i++; } 
           else { inQuotes = false; }
         } else { curVal += str[i]; }
       } else {
@@ -565,20 +564,18 @@
     return result.map(s => s.trim());
   }
 
-  async function processCSV(text) {
+  async function processCSV(text, fileName = "名單") {
     try {
-      // 1. 計算 Hash 並更新 UI
+      // 計算 Hash 
       state.fileHash = (await sha256(text)).slice(0, 16);
       el('dashHash').textContent = state.fileHash;
       
-      // 2. 清理與解析資料
       const lines = text.split('\n').filter(l => l.trim().length > 0);
       if(lines.length < 2) throw new Error("檔案內容過少或沒有標題列。");
       
       state.rows =[]; 
       state.unitsMap = {};
       
-      // 跳過標題列，從 i=1 開始讀取
       for(let i=1; i<lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if(cols.length >= 4) {
@@ -599,7 +596,11 @@
       
       if (state.rows.length === 0) throw new Error("無法解析出有效的名單資料。");
       
-      // 3. 渲染操作面板並解鎖抽籤按鈕
+      // 更新上傳框的視覺回饋
+      el('uploadIcon').textContent = '✅';
+      el('uploadTitle').textContent = `成功載入：${fileName}`;
+      el('uploadTitle').style.color = 'var(--tfd-red)';
+
       renderQuotaPanel(); 
       el('btnStartDraw').disabled = false;
       
@@ -614,7 +615,6 @@
   function renderQuotaPanel() {
     el('quotaList').innerHTML = '';
     
-    // 按照單位名稱自然排序顯示
     Object.keys(state.unitsMap).sort().forEach(unit => {
       const count = state.unitsMap[unit].length;
       const div = document.createElement('div'); 
@@ -636,7 +636,7 @@
       el('quotaList').appendChild(div);
     });
     
-    // 渲染完畢自動套用全域預設人數 (20人)
+    // 渲染完畢自動套用全域預設人數
     applyGlobalQuota();
   }
 
@@ -644,25 +644,22 @@
   /* =========================================================================[UI 互動與控制事件綁定]
   ========================================================================= */
   
-  // 1. 檔案上傳事件
   el('csvFileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if(!file) return; 
     try {
       const text = await file.text();
-      await processCSV(text);
+      await processCSV(text, file.name);
     } catch (err) {
       alert("讀取檔案失敗：" + err.message);
     }
-    e.target.value = ''; // 允許重複上傳相同檔案
+    e.target.value = ''; 
   });
 
-  // 2. 全選單位
   el('checkAllBtn').addEventListener('change', (e) => {
     document.querySelectorAll('.u-cb').forEach(c => c.checked = e.target.checked);
   });
 
-  // 3. 批次套用人數
   el('btnApplyGlobal').addEventListener('click', applyGlobalQuota);
 
   function applyGlobalQuota() {
@@ -677,7 +674,6 @@
     document.querySelectorAll('.u-cb').forEach(c => c.checked = true);
   }
 
-  // 4. 載入假名冊測試資料 (修正語法結構，確保穩定性)
   el('btnLoadDemo').addEventListener('click', loadDemoData);
   
   function loadDemoData() {
@@ -687,7 +683,6 @@
     const units =["第一大隊","第二大隊","第三大隊","第四大隊"];
     
     units.forEach((unit, idx) => {
-      // 為每個大隊生成 80 筆資料
       for(let i = 1; i <= 80; i++) {
         const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
         const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -696,13 +691,10 @@
         csv += `${unit},${unit.charAt(0)}區分隊,${empId},${name},隊員\n`;
       }
     });
-    
-    processCSV(csv);
+    processCSV(csv, "測試名單.csv");
   }
 
-  // 5. 下載公版範例
   el('btnDownloadSample').addEventListener('click', () => {
-    // 加上 \uFEFF BOM 解決 Excel 中文亂碼問題
     const content = "\uFEFF大隊,分隊,員編,姓名,職稱\n第一大隊,城中分隊,A1001,王大明,隊員\n第二大隊,信義分隊,B2001,陳小華,小隊長";
     const blob = new Blob([content], {type: 'text/csv;charset=utf-8-sig'});
     const a = document.createElement('a'); 
@@ -714,28 +706,21 @@
 
   /* =========================================================================
      [核心：抽籤邏輯與大螢幕控制]
-     極度嚴謹的安全鎖與例外處理
   ========================================================================= */
   
-  // 鎖定 UI 避免抽籤中途手殘點到其他按鈕導致崩潰
   function lockUI(locked) {
     state.isDrawing = locked;
     document.querySelectorAll('input, button').forEach(element => {
-      // 除了「跳過動畫按鈕」以外，全部上鎖
-      if(element.id !== 'skipBtn') {
-        element.disabled = locked;
-      }
+      if(element.id !== 'skipBtn') element.disabled = locked;
     });
   }
 
   el('btnStartDraw').addEventListener('click', async () => {
-    // 雙重防護鎖
     if (state.isDrawing) return; 
     if (state.hasDrawn && !confirm("您已經抽過籤了，重新啟動將會【清空現有名單】。確定要重新抽籤嗎？")) return;
     
-    initAudio(); // 啟用音效引擎
+    initAudio(); // 每次點擊都強制喚醒 AudioContext，避免被瀏覽器休眠
     
-    // 1. 收集待抽籤任務
     const tasks =[];
     document.querySelectorAll('.quota-item').forEach(item => {
       const isChecked = item.querySelector('.u-cb').checked;
@@ -750,36 +735,35 @@
       return;
     }
 
-    // 2. UI 狀態切換與上鎖
     lockUI(true);
     el('stageArea').style.display = 'block';
     el('winnersGrid').innerHTML = '';
     state.skipAnimation = false; 
     state.result =[];
 
-    // 3. 處理 Seed 稽核碼
     const customSeed = el('seedInput').value.trim();
-    // 若使用者未輸入，系統自動產生亂碼
     state.seed = customSeed !== "" ? customSeed : ("TFD-" + Math.random().toString(36).substr(2,6).toUpperCase());
     
-    // 回填介面看板
     el('dashSeed').textContent = state.seed; 
     el('seedInput').value = state.seed;
     
-    // 初始化 PRNG 亂數生成器 (確保抽籤的嚴謹與可重現)
     const gen = xmur3(state.seed); 
     const rng = sfc32(gen(), gen(), gen(), gen());
 
     try {
-      // 4. 依序執行每個大隊的抽籤程序
       for (const task of tasks) {
         await runDrawStep(task.unit, task.count, rng);
       }
       
-      // 5. 抽籤圓滿完成，觸發慶祝特效
+      // 處理完成狀態
       el('dispName').textContent = "抽籤圓滿完成"; 
       el('dispName').classList.add('highlight');
       el('drawProgress').textContent = "DONE";
+      
+      // 略過動畫後，確保畫面視角在最後一張卡片，讓長官看清楚
+      if(state.skipAnimation && el('winnersGrid').lastElementChild) {
+        el('winnersGrid').lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       
       fireGrandConfetti(); 
       playFanfare(); 
@@ -789,35 +773,28 @@
       console.error(error);
       alert("抽籤過程中發生非預期錯誤：" + error.message);
     } finally {
-      // 無論成功或失敗，最後一定要解鎖 UI
       lockUI(false);
     }
   });
 
-  // 允許使用者中途略過動畫
   el('skipBtn').addEventListener('click', () => { state.skipAnimation = true; });
 
   async function runDrawStep(unitName, count, rng) {
-    // 1. 複製該單位的名單，避免修改原始母體資料
     const candidates = [...state.unitsMap[unitName]];
     
-    // 2. 絕對公平的 Fisher-Yates 洗牌演算法 (嚴謹防重複)
     for(let i = candidates.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
     
-    // 3. 擷取前 N 名作為得獎者
     const winners = candidates.slice(0, count);
     const isTurbo = el('turboMode').checked;
 
-    // 4. 更新大螢幕看板
     el('dispUnit').textContent = `現在抽取：${unitName}`;
     el('dispName').classList.remove('highlight');
     el('stageScreen').scrollIntoView({ behavior: 'smooth', block: 'center' });
     await sleep(800);
 
-    // 5. 儀式感倒數 (若未開啟極速模式)
     if(!isTurbo && !state.skipAnimation) {
       for(const v of ['3', '2', '1']) {
         if(state.skipAnimation) break;
@@ -832,22 +809,17 @@
       }
     }
 
-    // 6. 逐一彈出得獎卡片亮牌
     for(let i = 0; i < winners.length; i++) {
       const winner = winners[i];
-      
-      // 寫入最終結果陣列，供後續匯出 CSV 使用
       state.result.push({ ...winner, order: i + 1 });
       el('drawProgress').textContent = `進度: ${i + 1} / ${count}`;
 
-      // 若使用者點擊跳過，瞬間發牌
       if(state.skipAnimation) {
         appendWinnerCard(winner, i + 1);
         continue; 
       }
 
       if(!isTurbo && i < 3) {
-        // 前 3 名：營造名字跑動的緊張特效
         for(let r = 0; r < 12; r++) {
           el('dispName').textContent = candidates[Math.floor(Math.random() * candidates.length)].name;
           await sleep(60);
@@ -858,29 +830,27 @@
         sndPop();
         
         const card = appendWinnerCard(winner, i + 1);
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 鏡頭自動完美追蹤
-        
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
         await sleep(1200); 
         el('dispName').classList.remove('highlight');
       } else {
-        // 第 4 名開始或開啟極速模式：連續快速彈出
         el('dispName').textContent = winner.name;
         sndPop();
         
         const card = appendWinnerCard(winner, i + 1);
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 鏡頭自動完美追蹤
+        // 極速模式下，改用 behavior: 'auto' 避免畫面劇烈抖動暈眩
+        card.scrollIntoView({ behavior: isTurbo ? 'auto' : 'smooth', block: 'center' }); 
         
-        await sleep(isTurbo ? 60 : 250);
+        await sleep(isTurbo ? 50 : 250);
       }
     }
   }
 
-  // 將得獎卡片加入 DOM (實作 XSS 安全防護)
   function appendWinnerCard(w, num) {
     const card = document.createElement('div');
     card.className = "card";
     
-    // 預防 XSS 攻擊的字串跳脫處理
+    // 防範 XSS
     const escapeHTML = str => {
       const div = document.createElement('div');
       div.innerText = str;
@@ -898,12 +868,9 @@
     return card;
   }
 
-
   /* =========================================================================
-     [稽核報表安全匯出]
-     確保匯出的 CSV 不會因為名單內含有逗號而格式跑位
+     [CSV 安全匯出]
   ========================================================================= */
-  
   function escapeCSV(val) {
     if (val == null) return '""';
     const str = String(val);
@@ -916,21 +883,16 @@
   el('btnExportResult').addEventListener('click', () => {
     if(state.result.length === 0) return alert("目前沒有可匯出的抽籤結果。");
     
-    // 加上 BOM \uFEFF 避免 Excel 中文變成亂碼
     let csv = `\uFEFF--- 臺北市消防局體能抽測抽籤稽核證明 ---\n`;
     csv += `報告產出時間,${new Date().toLocaleString()}\n`;
     csv += `母體清冊 HASH (SHA-256),${state.fileHash}\n`;
     csv += `系統驗證碼 SEED,${state.seed}\n\n`;
-    
-    // CSV 標題列
     csv += `大隊,抽中序號,分隊,員編,姓名,職稱\n`;
     
-    // 寫入每一列得獎資料
     state.result.forEach(r => {
       csv += `${escapeCSV(r.unit)},${r.order},${escapeCSV(r.branch)},${escapeCSV(r.id)},${escapeCSV(r.name)},${escapeCSV(r.title)}\n`;
     });
     
-    // 觸發瀏覽器下載
     const blob = new Blob([csv], {type: 'text/csv;charset=utf-8-sig'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -938,9 +900,7 @@
     a.click();
   });
 
-  /* =========================================================================
-     [雜項] 保持畫布與視窗大小同步
-  ========================================================================= */
+  // 保持畫布與視窗大小同步
   window.addEventListener('resize', () => { 
     canvas.width = window.innerWidth; 
     canvas.height = window.innerHeight; 
@@ -948,7 +908,6 @@
   canvas.width = window.innerWidth; 
   canvas.height = window.innerHeight;
 
-  // 為了確保萬無一失，在腳本最後主動呼叫一次初始化
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     loadDemoData();
   } else {

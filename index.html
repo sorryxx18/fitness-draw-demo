@@ -113,7 +113,7 @@
       display: flex; gap: 15px; align-items: center; background: #f1f3f5; padding: 14px 20px;
       border-radius: 12px; margin-bottom: 15px; border: 1px solid #e9ecef; flex-wrap: wrap;
     }
-    .quota-list { display: flex; flex-direction: column; gap: 12px; max-height: 380px; overflow-y: auto; padding-right: 10px; }
+    .quota-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
     
     .quota-item {
       display: flex; flex-direction: column; gap: 10px; padding: 16px; background: white;
@@ -146,19 +146,26 @@
     .skip-btn:hover { background: var(--tfd-red); }
 
     /* =========================================
-       6. 抽籤結果卡片牆 (大隊主題色)
+       6. 抽籤結果卡片牆 (已修復吃字 Bug)
        ========================================= */
     .result-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 3px solid #dee2e6; padding-bottom: 18px; }
     .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; padding-bottom: 120px; }
 
     .card {
       background: #ffffff; border-radius: 18px; padding: 22px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06); opacity: 0; transform: scale(0.6) translateY(50px);
-      animation: popOut 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden;
-      border-top: 6px solid var(--theme-color, var(--tfd-blue)); /* 依賴變數套用主題色 */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06); position: relative; overflow: hidden;
+      border-top: 6px solid var(--theme-color, var(--tfd-blue));
+      
+      /* 核心修復：預設必須是 Opacity 1，並使用 backwards 讓動畫接管延遲前的透明度 */
+      opacity: 1; 
+      transform: scale(1) translateY(0);
+      animation: popOut 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards; 
     }
     
-    @keyframes popOut { to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes popOut { 
+      0% { opacity: 0; transform: scale(0.6) translateY(50px); } 
+      100% { opacity: 1; transform: scale(1) translateY(0); } 
+    }
 
     .c-tag { font-family: var(--font-num); font-weight: 900; font-size: 13px; color: var(--theme-color); margin-bottom: 12px; display: inline-block; background: var(--theme-bg); padding: 4px 10px; border-radius: 20px; }
     .c-status { position: absolute; top: 18px; right: 18px; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 10px; }
@@ -172,10 +179,10 @@
     }
     .c-redraw-btn:hover { background: #ffebee; color: var(--tfd-red); border-color: var(--tfd-red); }
 
-    /* Gacha 特效 */
-    .card.is-active{ outline: 2px solid rgba(255, 193, 7, 0.85); box-shadow: 0 0 28px rgba(255,193,7,0.25); transform: translateY(-2px) scale(1.02); }
-    .card.is-milestone{ outline: 2px solid rgba(255, 193, 7, 0.95); box-shadow: 0 0 36px rgba(255,193,7,0.35); animation: gachaPulse 220ms ease-out; }
-    .card.is-jackpot{ outline: 2px solid rgba(255, 215, 0, 0.98); box-shadow: 0 0 46px rgba(255,215,0,0.45); animation: gachaJackpot 260ms ease-out; }
+    /* Gacha 特效 (加入 !important 確保強制現形，不受覆蓋影響) */
+    .card.is-active{ outline: 2px solid rgba(255, 193, 7, 0.85); box-shadow: 0 0 28px rgba(255,193,7,0.25); transform: translateY(-2px) scale(1.02); opacity: 1 !important; }
+    .card.is-milestone{ outline: 2px solid rgba(255, 193, 7, 0.95); box-shadow: 0 0 36px rgba(255,193,7,0.35); animation: gachaPulse 220ms ease-out; opacity: 1 !important; }
+    .card.is-jackpot{ outline: 2px solid rgba(255, 215, 0, 0.98); box-shadow: 0 0 46px rgba(255,215,0,0.45); animation: gachaJackpot 260ms ease-out; opacity: 1 !important; }
     @keyframes gachaPulse{ 0%{ transform: scale(1.02); } 60%{ transform: scale(1.06); } 100%{ transform: scale(1.02); } }
     @keyframes gachaJackpot{ 0%{ transform: scale(1.02); } 55%{ transform: scale(1.08); filter: brightness(1.2); } 100%{ transform: scale(1.02); } }
 
@@ -311,8 +318,8 @@
 
   const state = { 
     fileHash: '', 
-    unitsMap: {}, // structure: { '第一大隊': { '及格': [], '不及格':[] }, ... }
-    remainingPool: {}, // stores remaining shuffled candidates for redraws
+    unitsMap: {}, 
+    remainingPool: {}, // stores remaining candidates for redraws
     result:[], 
     seed: '', 
     isDrawing: false, 
@@ -333,8 +340,7 @@
     if (sel) { SFX_VOL = parseFloat(sel.value || '1.2'); sel.addEventListener('change', () => { SFX_VOL = parseFloat(sel.value || '1.2'); }); }
   });
 
-  /* =========================================================================
-     [密碼學與 PRNG] 
+  /* =========================================================================[密碼學與 PRNG] 
   ========================================================================= */
   async function sha256(text) {
     try {
@@ -404,8 +410,7 @@
   }
 
   function sfxFlip() {
-    playBeep(520, 'triangle', 0.045, 0.05);
-    setTimeout(() => playBeep(260, 'sine', 0.05, 0.05), 35);
+    playBeep(520, 'triangle', 0.045, 0.05); setTimeout(() => playBeep(260, 'sine', 0.05, 0.05), 35);
   }
 
   function sfxHit(tier = 'normal') {
@@ -417,8 +422,7 @@
 
   function playExaggeratedFanfare() {
     try {
-      if (!audioCtx) return; const t0 = audioCtx.currentTime;
-      [523.25, 659.25, 783.99].forEach(f => {
+      if (!audioCtx) return; const t0 = audioCtx.currentTime;[523.25, 659.25, 783.99].forEach(f => {
         const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(f, t0);
         gain.gain.setValueAtTime(0.0001, t0); gain.gain.exponentialRampToValueAtTime(0.06, t0 + 0.03); gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
         osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t0); osc.stop(t0 + 0.4);
@@ -435,8 +439,8 @@
 
   function fireGrandConfetti() {
     if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
-    particles = [];
-    const colors =['#D32F2F', '#1976D2', '#FFC107', '#FFFFFF', '#000000'];[0.1, 0.5, 0.9].forEach(lx => {
+    particles = []; const colors =['#D32F2F', '#1976D2', '#FFC107', '#FFFFFF', '#000000'];
+    [0.1, 0.5, 0.9].forEach(lx => {
       for(let i = 0; i < 120; i++) {
         particles.push({
           x: canvas.width * lx, y: canvas.height,
@@ -492,13 +496,11 @@
       for(let i = 1; i < lines.length; i++) {
         const cols = parseCSVRow(lines[i]);
         if (cols.length >= 4) {
-          // 新格式：大隊, 分隊, 職稱, 姓名, 測驗狀態
           const row = { unit: cols[0] || '未分類', branch: cols[1] || '', title: cols[2] || '', name: cols[3] || '', status: cols[4] || '及格' };
-          // 確保狀態文字正規化
           row.status = row.status.includes('不及格') ? '不及格' : '及格';
           
           if(!state.unitsMap[row.unit]) {
-            state.unitsMap[row.unit] = { '及格': [], '不及格': [] };
+            state.unitsMap[row.unit] = { '及格': [], '不及格':[] };
           }
           state.unitsMap[row.unit][row.status].push(row);
           totalValid++;
@@ -615,14 +617,12 @@
       const unit = item.dataset.unit;
       const passCount = parseInt(item.querySelector('.u-num-pass').value, 10) || 0;
       const failCount = parseInt(item.querySelector('.u-num-fail').value, 10) || 0;
-      // 拆分任務：先及格、再不及格
       if (passCount > 0) tasks.push({ unit, status: '及格', count: passCount });
       if (failCount > 0) tasks.push({ unit, status: '不及格', count: failCount });
     });
     
     if (tasks.length === 0) return alert("請至少勾選一個單位，並設定抽取人數。");
 
-    // 依照大隊順序排序
     tasks.sort((a, b) => (BRIGADE_ORDER[a.unit] || 99) - (BRIGADE_ORDER[b.unit] || 99));
 
     lockUI(true); el('stageArea').style.display = 'block'; el('winnersGrid').innerHTML = '';
@@ -650,14 +650,12 @@
   async function runDrawStep(unitName, statusName, count, rng) {
     const candidates =[...state.unitsMap[unitName][statusName]];
     
-    // Fisher-Yates 洗牌
     for(let i = candidates.length - 1; i > 0; i--) { 
       const j = Math.floor(rng() * (i + 1)); 
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]]; 
     }
     
     const winners = candidates.slice(0, count);
-    // 儲存剩餘池供「重抽替換」使用
     state.remainingPool[`${unitName}_${statusName}`] = candidates.slice(count);
 
     const isTurbo = el('turboMode').checked;
@@ -675,14 +673,12 @@
 
     let prevCard = null;
 
-    // 保證執行 count 次
     for (let i = 0; i < winners.length; i++) {
       const winner = winners[i]; 
       const orderNum = i + 1;
       
-      // 寫入總結果表
       winner.order = orderNum;
-      winner.auditNote = ''; // 稽核備註欄位
+      winner.auditNote = ''; 
       state.result.push({ ...winner }); 
       
       el('drawProgress').textContent = `進度: ${orderNum} / ${count}`;
@@ -721,14 +717,11 @@
     const card = document.createElement('div');
     card.className = 'card';
     
-    // 依據大隊套用專屬顏色變數
     const theme = THEME_MAP[w.unit] || { color: '#455a64', bg: '#eceff1' };
     card.style.setProperty('--theme-color', theme.color);
     card.style.setProperty('--theme-bg', theme.bg);
 
     const escapeHTML = str => { const div = document.createElement('div'); div.innerText = str; return div.innerHTML; };
-    
-    // 判斷狀態 Badge 顏色
     const statusClass = w.status === '及格' ? 'badge-pass' : 'badge-fail';
 
     card.innerHTML = `
@@ -764,7 +757,6 @@
     // 抽出下一位
     const newWinner = pool.shift(); 
     
-    // 尋找並更新 state.result
     const resultIdx = state.result.findIndex(r => r.unit === unit && r.status === status && r.order === orderNum);
     if (resultIdx !== -1) {
       state.result[resultIdx] = {
@@ -774,20 +766,17 @@
       };
     }
 
-    // 更新 DOM 卡片畫面
     cardElem.querySelector('.c-name').innerText = newWinner.name;
     cardElem.querySelector('.c-unit').innerText = `${newWinner.branch} - ${newWinner.title}`;
     
-    // 重抽特效與音效
     cardElem.classList.remove('is-active', 'is-milestone', 'is-jackpot');
-    void cardElem.offsetWidth; // trigger reflow
+    void cardElem.offsetWidth; 
     cardElem.classList.add('is-milestone');
     sfxHit('milestone');
     setTimeout(() => cardElem.classList.remove('is-milestone'), 600);
   };
 
-  /* =========================================================================
-     [匯出 CSV 報告]
+  /* =========================================================================[匯出 CSV 報告]
   ========================================================================= */
   function escapeCSV(val) {
     if (val == null) return '""'; 
@@ -814,8 +803,6 @@
     a.download = `TFD_抽籤結果稽核檔_${state.seed}.csv`; a.click();
   });
 
-  /* =========================================================================[系統畫布同步]
-  ========================================================================= */
   window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }); 
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
